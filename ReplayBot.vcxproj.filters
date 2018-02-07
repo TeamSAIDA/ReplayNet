@@ -1,0 +1,276 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <ClCompile Include="ReplayBot\main.cpp">
+      <Filter>BotClient</Filter>
+    </ClCompile>
+    <ClCompile Include="ReplayBot\MyBotModule.cpp">
+      <Filter>BotClient</Filter>
+    </ClCompile>
+    <ClCompile Include="ReplayBot\GameCommander.cpp">
+      <Filter>BotSource</Filter>
+    </ClCompile>
+    <ClCompile Include="ReplayBot\InformationManager.cpp">
+      <Filter>BotSource</Filter>
+    </ClCompile>
+    <ClCompile Include="ReplayBot\UXManager.cpp">
+      <Filter>BotSource</Filter>
+    </ClCompile>
+    <ClCompile Include="ReplayBot\Common.cpp">
+      <Filter>BotSource\CommonUtil</Filter>
+    </ClCompile>
+    <ClCompile Include="ReplayBot\Config.cpp">
+      <Filter>BotSource\CommonUtil</Filter>
+    </ClCompile>
+    <ClCompile Include="ReplayBot\BWEM\src\area.cpp">
+      <Filter>BWEM\src</Filter>
+    </ClCompile>
+    <ClCompile Include="ReplayBot\BWEM\src\base.cpp">
+      <Filter>BWEM\src</Filter>
+    </ClCompile>
+    <ClCompile Include="ReplayBot\BWEM\src\bwapiExt.cpp">
+      <Filter>BWEM\src</Filter>
+    </ClCompile>
+    <ClCompile Include="ReplayBot\BWEM\src\bwem.cpp">
+      <Filter>BWEM\src</Filter>
+    </ClCompile>
+    <ClCompile Include="ReplayBot\BWEM\src\cp.cpp">
+      <Filter>BWEM\src</Filter>
+    </ClCompile>
+    <ClCompile Include="ReplayBot\BWEM\src\examples.cpp">
+      <Filter>BWEM\src</Filter>
+    </ClCompile>
+    <ClCompile Include="ReplayBot\BWEM\src\exampleWall.cpp">
+      <Filter>BWEM\src</Filter>
+    </ClCompile>
+    <ClCompile Include="ReplayBot\BWEM\src\graph.cpp">
+      <Filter>BWEM\src</Filter>
+    </ClCompile>
+    <ClCompile Include="ReplayBot\BWEM\src\gridMap.cpp">
+      <Filter>BWEM\src</Filter>
+    </ClCompile>
+    <ClCompile Include="ReplayBot\BWEM\src\map.cpp">
+      <Filter>BWEM\src</Filter>
+    </ClCompile>
+    <ClCompile Include="ReplayBot\BWEM\src\mapDrawer.cpp">
+      <Filter>BWEM\src</Filter>
+    </ClCompile>
+    <ClCompile Include="ReplayBot\BWEM\src\mapImpl.cpp">
+      <Filter>BWEM\src</Filter>
+    </ClCompile>
+    <ClCompile Include="ReplayBot\BWEM\src\mapPrinter.cpp">
+      <Filter>BWEM\src</Filter>
+    </ClCompile>
+    <ClCompile Include="ReplayBot\BWEM\src\neutral.cpp">
+      <Filter>BWEM\src</Filter>
+    </ClCompile>
+    <ClCompile Include="ReplayBot\BWEM\src\tiles.cpp">
+      <Filter>BWEM\src</Filter>
+    </ClCompile>
+    <ClCompile Include="ReplayBot\BWEM\src\utils.cpp">
+      <Filter>BWEM\src</Filter>
+    </ClCompile>
+    <ClCompile Include="ReplayBot\BWEM\src\winutils.cpp">
+      <Filter>BWEM\src</Filter>
+    </ClCompile>
+    <ClCompile Include="ReplayBot\BWEM\EasyBMP_1.06\EasyBMP.cpp">
+      <Filter>BWEM\EasyBMP</Filter>
+    </ClCompile>
+    <ClCompile Include="ReplayBot\UnitData.cpp">
+      <Filter>BotSource\DataStructure</Filter>
+    </ClCompile>
+    <ClCompile Include="ReplayBot\UnitInfo.cpp">
+      <Filter>BotSource\DataStructure</Filter>
+    </ClCompile>
+    <ClCompile Include="ReplayBot\MapTools.cpp">
+      <Filter>BotSource\DataStructure</Filter>
+    </ClCompile>
+    <ClCompile Include="ReplayBot\LoggingManager.cpp">
+      <Filter>BotSource</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="ReplayBot\MyBotModule.h">
+      <Filter>BotClient</Filter>
+    </ClInclude>
+    <ClInclude Include="ReplayBot\GameCommander.h">
+      <Filter>BotSource</Filter>
+    </ClInclude>
+    <ClInclude Include="ReplayBot\InformationManager.h">
+      <Filter>BotSource</Filter>
+    </ClInclude>
+    <ClInclude Include="ReplayBot\UXManager.h">
+      <Filter>BotSource</Filter>
+    </ClInclude>
+    <ClInclude Include="ReplayBot\Common.h">
+      <Filter>BotSource\CommonUtil</Filter>
+    </ClInclude>
+    <ClInclude Include="ReplayBot\Config.h">
+      <Filter>BotSource\CommonUtil</Filter>
+    </ClInclude>
+    <ClInclude Include="ReplayBot\BWEM\src\area.h">
+      <Filter>BWEM\src</Filter>
+    </ClInclude>
+    <ClInclude Include="ReplayBot\BWEM\src\base.h">
+      <Filter>BWEM\src</Filter>
+    </ClInclude>
+    <ClInclude Include="ReplayBot\BWEM\src\bwapiExt.h">
+      <Filter>BWEM\src</Filter>
+    </ClInclude>
+    <ClInclude Include="ReplayBot\BWEM\src\bwem.h">
+      <Filter>BWEM\src</Filter>
+    </ClInclude>
+    <ClInclude Include="ReplayBot\BWEM\src\cp.h">
+      <Filter>BWEM\src</Filter>
+    </ClInclude>
+    <ClInclude Include="ReplayBot\BWEM\src\defs.h">
+      <Filter>BWEM\src</Filter>
+    </ClInclude>
+    <ClInclude Include="ReplayBot\BWEM\src\examples.h">
+      <Filter>BWEM\src</Filter>
+    </ClInclude>
+    <ClInclude Include="ReplayBot\BWEM\src\exampleWall.h">
+      <Filter>BWEM\src</Filter>
+    </ClInclude>
+    <ClInclude Include="ReplayBot\BWEM\src\graph.h">
+      <Filter>BWEM\src</Filter>
+    </ClInclude>
+    <ClInclude Include="ReplayBot\BWEM\src\gridMap.h">
+      <Filter>BWEM\src</Filter>
+    </ClInclude>
+    <ClInclude Include="ReplayBot\BWEM\src\map.h">
+      <Filter>BWEM\src</Filter>
+    </ClInclude>
+    <ClInclude Include="ReplayBot\BWEM\src\mapDrawer.h">
+      <Filter>BWEM\src</Filter>
+    </ClInclude>
+    <ClInclude Include="ReplayBot\BWEM\src\mapImpl.h">
+      <Filter>BWEM\src</Filter>
+    </ClInclude>
+    <ClInclude Include="ReplayBot\BWEM\src\mapPrinter.h">
+      <Filter>BWEM\src</Filter>
+    </ClInclude>
+    <ClInclude Include="ReplayBot\BWEM\src\neutral.h">
+      <Filter>BWEM\src</Filter>
+    </ClInclude>
+    <ClInclude Include="ReplayBot\BWEM\src\tiles.h">
+      <Filter>BWEM\src</Filter>
+    </ClInclude>
+    <ClInclude Include="ReplayBot\BWEM\src\utils.h">
+      <Filter>BWEM\src</Filter>
+    </ClInclude>
+    <ClInclude Include="ReplayBot\BWEM\src\winutils.h">
+      <Filter>BWEM\src</Filter>
+    </ClInclude>
+    <ClInclude Include="ReplayBot\BWEM\EasyBMP_1.06\EasyBMP.h">
+      <Filter>BWEM\EasyBMP</Filter>
+    </ClInclude>
+    <ClInclude Include="ReplayBot\UnitData.h">
+      <Filter>BotSource\DataStructure</Filter>
+    </ClInclude>
+    <ClInclude Include="ReplayBot\UnitInfo.h">
+      <Filter>BotSource\DataStructure</Filter>
+    </ClInclude>
+    <ClInclude Include="ReplayBot\MapTools.h">
+      <Filter>BotSource\DataStructure</Filter>
+    </ClInclude>
+    <ClInclude Include="ReplayBot\LoggingManager.h">
+      <Filter>BotSource</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <Filter Include="BotSource">
+      <UniqueIdentifier>{295ff9ca-e7f5-4de0-ba47-19bbf0421850}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="BotSource\CommonUtil">
+      <UniqueIdentifier>{41c4e5e4-ae7a-4210-b97c-af7eb92ab673}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="BotSource\DataStructure">
+      <UniqueIdentifier>{2a115475-fe41-43d7-9253-35be6a33749a}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="BotClient">
+      <UniqueIdentifier>{c8cb4e54-d671-49ab-96cc-8408316ab2bf}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="BWEM">
+      <UniqueIdentifier>{dde37e20-e1a9-47d5-a545-7c468f8272ed}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="BWEM\doc">
+      <UniqueIdentifier>{d6953c2a-7779-4dd5-bfdc-b685a45f1e61}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="BWEM\doc\html">
+      <UniqueIdentifier>{16acb652-6a36-4b29-aa19-706b386068d5}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="BWEM\src">
+      <UniqueIdentifier>{309ed729-bdf3-4e97-9397-39a5a9990462}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="BWEM\EasyBMP">
+      <UniqueIdentifier>{16556d8f-be1e-4934-ba24-153ec0755465}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <Text Include="ReplayBot\BWEM\LICENSE.txt">
+      <Filter>BWEM</Filter>
+    </Text>
+    <Text Include="ReplayBot\BWEM\README.txt">
+      <Filter>BWEM</Filter>
+    </Text>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="ReplayBot\BWEM\doc\html\about.html">
+      <Filter>BWEM\doc\html</Filter>
+    </None>
+    <None Include="ReplayBot\BWEM\doc\html\download.html">
+      <Filter>BWEM\doc\html</Filter>
+    </None>
+    <None Include="ReplayBot\BWEM\doc\html\faq.html">
+      <Filter>BWEM\doc\html</Filter>
+    </None>
+    <None Include="ReplayBot\BWEM\doc\html\features.html">
+      <Filter>BWEM\doc\html</Filter>
+    </None>
+    <None Include="ReplayBot\BWEM\doc\html\help.html">
+      <Filter>BWEM\doc\html</Filter>
+    </None>
+    <None Include="ReplayBot\BWEM\doc\html\index.html">
+      <Filter>BWEM\doc\html</Filter>
+    </None>
+    <None Include="ReplayBot\BWEM\doc\html\interactiveIron.html">
+      <Filter>BWEM\doc\html</Filter>
+    </None>
+    <None Include="ReplayBot\BWEM\doc\html\Iron.html">
+      <Filter>BWEM\doc\html</Filter>
+    </None>
+    <None Include="ReplayBot\BWEM\doc\html\start.html">
+      <Filter>BWEM\doc\html</Filter>
+    </None>
+    <None Include="ReplayBot\BWEM\doc\html\Stone.html">
+      <Filter>BWEM\doc\html</Filter>
+    </None>
+    <None Include="ReplayBot\BWEM\doc\html\style.css">
+      <Filter>BWEM\doc\html</Filter>
+    </None>
+  </ItemGroup>
+  <ItemGroup>
+    <Image Include="ReplayBot\BWEM\doc\html\Andromeda.png">
+      <Filter>BWEM\doc\html</Filter>
+    </Image>
+    <Image Include="ReplayBot\BWEM\doc\html\Baby Steps.png">
+      <Filter>BWEM\doc\html</Filter>
+    </Image>
+    <Image Include="ReplayBot\BWEM\doc\html\Great Barrier Reef.png">
+      <Filter>BWEM\doc\html</Filter>
+    </Image>
+    <Image Include="ReplayBot\BWEM\doc\html\Heartbreak Ridge.png">
+      <Filter>BWEM\doc\html</Filter>
+    </Image>
+    <Image Include="ReplayBot\BWEM\doc\html\Iron.jpg">
+      <Filter>BWEM\doc\html</Filter>
+    </Image>
+    <Image Include="ReplayBot\BWEM\doc\html\Ride of Valkyries.png">
+      <Filter>BWEM\doc\html</Filter>
+    </Image>
+    <Image Include="ReplayBot\BWEM\doc\html\Stone.jpg">
+      <Filter>BWEM\doc\html</Filter>
+    </Image>
+  </ItemGroup>
+</Project>

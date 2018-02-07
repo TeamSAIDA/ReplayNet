@@ -1,0 +1,187 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" ToolsVersion="12.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup Label="ProjectConfigurations">
+    <ProjectConfiguration Include="Debug|Win32">
+      <Configuration>Debug</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|Win32">
+      <Configuration>Release</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+  </ItemGroup>
+  <PropertyGroup Label="Globals">
+    <ProjectGuid>{AE3B9DC4-5FBB-4B57-8AB4-0D84D8649D78}</ProjectGuid>
+    <RootNamespace>ReplayBot</RootNamespace>
+    <Keyword>Win32Proj</Keyword>
+    <ProjectName>ReplayBot</ProjectName>
+    <WindowsTargetPlatformVersion>10.0.15063.0</WindowsTargetPlatformVersion>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <WholeProgramOptimization>true</WholeProgramOptimization>
+    <PlatformToolset>v120</PlatformToolset>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <CharacterSet>Unicode</CharacterSet>
+    <PlatformToolset>v120</PlatformToolset>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
+  <ImportGroup Label="ExtensionSettings">
+  </ImportGroup>
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <PropertyGroup Label="UserMacros" />
+  <PropertyGroup>
+    <_ProjectFileVersion>10.0.30319.1</_ProjectFileVersion>
+    <LinkIncremental Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</LinkIncremental>
+    <LinkIncremental Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">false</LinkIncremental>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <OutDir>$(SolutionDir)$(Configuration)\$(ProjectName)\</OutDir>
+    <IntDir>$(Configuration)\$(ProjectName)\</IntDir>
+  </PropertyGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <ClCompile>
+      <Optimization>Disabled</Optimization>
+      <AdditionalIncludeDirectories>$(BWAPI_DIR)/include;$(BWTA_DIR)/include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>NOMINMAX;WIN32;_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <MinimalRebuild>false</MinimalRebuild>
+      <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
+      <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
+      <PrecompiledHeader>
+      </PrecompiledHeader>
+      <WarningLevel>Level3</WarningLevel>
+      <MultiProcessorCompilation>true</MultiProcessorCompilation>
+      <AdditionalOptions>/D_ITERATOR_DEBUG_LEVEL=2 %(AdditionalOptions)</AdditionalOptions>
+    </ClCompile>
+    <PreLinkEvent />
+    <Link>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <SubSystem>Console</SubSystem>
+      <TargetMachine>MachineX86</TargetMachine>
+      <AdditionalDependencies>Advapi32.lib;$(BWAPI_DIR)/lib/BWAPId.lib;$(BWAPI_DIR)/lib/BWAPIClientd.lib;%(AdditionalDependencies);C:/StarCraft/bwlibrary/BWTA22/lib/BWTAd.lib;C:/StarCraft/bwlibrary/BWTA22/lib/libCGAL-vc120-mt-gd-4.4.lib;C:/StarCraft/bwlibrary/BWTA22/lib/libboost_thread-vc120-mt-gd-1_56.lib;C:/StarCraft/bwlibrary/BWTA22/lib/libboost_system-vc120-mt-gd-1_56.lib;C:/StarCraft/bwlibrary/BWTA22/lib/libboost_filesystem-vc120-mt-gd-1_56.lib;C:/StarCraft/bwlibrary/BWTA22/lib/libgmp-10.lib;C:/StarCraft/bwlibrary/BWTA22/lib/libmpfr-4.lib</AdditionalDependencies>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <ClCompile>
+      <Optimization>MaxSpeed</Optimization>
+      <IntrinsicFunctions>true</IntrinsicFunctions>
+      <AdditionalIncludeDirectories>C:/StarCraft/bwlibrary/BWAPI412/include;C:/StarCraft/bwlibrary/BWTA22/include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>NOMINMAX;WIN32;NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
+      <FunctionLevelLinking>true</FunctionLevelLinking>
+      <PrecompiledHeader>
+      </PrecompiledHeader>
+      <WarningLevel>Level3</WarningLevel>
+      <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
+      <MultiProcessorCompilation>true</MultiProcessorCompilation>
+    </ClCompile>
+    <PreLinkEvent />
+    <Link>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <SubSystem>Console</SubSystem>
+      <OptimizeReferences>true</OptimizeReferences>
+      <EnableCOMDATFolding>true</EnableCOMDATFolding>
+      <TargetMachine>MachineX86</TargetMachine>
+      <AdditionalDependencies>Advapi32.lib;ws2_32.lib;C:/StarCraft/bwlibrary/BWAPI412/lib/BWAPI.lib;C:/StarCraft/bwlibrary/BWAPI412/lib/BWAPIClient.lib;C:/StarCraft/bwlibrary/BWTA22/lib/BWTA.lib;C:/StarCraft/bwlibrary/BWTA22/lib/libCGAL-vc120-mt-4.4.lib;C:/StarCraft/bwlibrary/BWTA22/lib/libboost_thread-vc120-mt-1_56.lib;C:/StarCraft/bwlibrary/BWTA22/lib/libboost_system-vc120-mt-1_56.lib;C:/StarCraft/bwlibrary/BWTA22/lib/libboost_filesystem-vc120-mt-1_56.lib;C:/StarCraft/bwlibrary/BWTA22/lib/libgmp-10.lib;C:/StarCraft/bwlibrary/BWTA22/lib/libmpfr-4.lib;%(AdditionalDependencies)</AdditionalDependencies>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemGroup>
+    <ClCompile Include="ReplayBot\BWEM\EasyBMP_1.06\EasyBMP.cpp" />
+    <ClCompile Include="ReplayBot\BWEM\src\area.cpp" />
+    <ClCompile Include="ReplayBot\BWEM\src\base.cpp" />
+    <ClCompile Include="ReplayBot\BWEM\src\bwapiExt.cpp" />
+    <ClCompile Include="ReplayBot\BWEM\src\bwem.cpp" />
+    <ClCompile Include="ReplayBot\BWEM\src\cp.cpp" />
+    <ClCompile Include="ReplayBot\BWEM\src\examples.cpp" />
+    <ClCompile Include="ReplayBot\BWEM\src\exampleWall.cpp" />
+    <ClCompile Include="ReplayBot\BWEM\src\graph.cpp" />
+    <ClCompile Include="ReplayBot\BWEM\src\gridMap.cpp" />
+    <ClCompile Include="ReplayBot\BWEM\src\map.cpp" />
+    <ClCompile Include="ReplayBot\BWEM\src\mapDrawer.cpp" />
+    <ClCompile Include="ReplayBot\BWEM\src\mapImpl.cpp" />
+    <ClCompile Include="ReplayBot\BWEM\src\mapPrinter.cpp" />
+    <ClCompile Include="ReplayBot\BWEM\src\neutral.cpp" />
+    <ClCompile Include="ReplayBot\BWEM\src\tiles.cpp" />
+    <ClCompile Include="ReplayBot\BWEM\src\utils.cpp" />
+    <ClCompile Include="ReplayBot\BWEM\src\winutils.cpp" />
+    <ClCompile Include="ReplayBot\Common.cpp" />
+    <ClCompile Include="ReplayBot\Config.cpp" />
+    <ClCompile Include="ReplayBot\GameCommander.cpp" />
+    <ClCompile Include="ReplayBot\InformationManager.cpp" />
+    <ClCompile Include="ReplayBot\MapTools.cpp" />
+    <ClCompile Include="ReplayBot\MyBotModule.cpp" />
+    <ClCompile Include="ReplayBot\main.cpp" />
+    <ClCompile Include="ReplayBot\LoggingManager.cpp" />
+    <ClCompile Include="ReplayBot\UnitData.cpp" />
+    <ClCompile Include="ReplayBot\UnitInfo.cpp" />
+    <ClCompile Include="ReplayBot\UXManager.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="ReplayBot\BWEM\EasyBMP_1.06\EasyBMP.h" />
+    <ClInclude Include="ReplayBot\BWEM\src\area.h" />
+    <ClInclude Include="ReplayBot\BWEM\src\base.h" />
+    <ClInclude Include="ReplayBot\BWEM\src\bwapiExt.h" />
+    <ClInclude Include="ReplayBot\BWEM\src\bwem.h" />
+    <ClInclude Include="ReplayBot\BWEM\src\cp.h" />
+    <ClInclude Include="ReplayBot\BWEM\src\defs.h" />
+    <ClInclude Include="ReplayBot\BWEM\src\examples.h" />
+    <ClInclude Include="ReplayBot\BWEM\src\exampleWall.h" />
+    <ClInclude Include="ReplayBot\BWEM\src\graph.h" />
+    <ClInclude Include="ReplayBot\BWEM\src\gridMap.h" />
+    <ClInclude Include="ReplayBot\BWEM\src\map.h" />
+    <ClInclude Include="ReplayBot\BWEM\src\mapDrawer.h" />
+    <ClInclude Include="ReplayBot\BWEM\src\mapImpl.h" />
+    <ClInclude Include="ReplayBot\BWEM\src\mapPrinter.h" />
+    <ClInclude Include="ReplayBot\BWEM\src\neutral.h" />
+    <ClInclude Include="ReplayBot\BWEM\src\tiles.h" />
+    <ClInclude Include="ReplayBot\BWEM\src\utils.h" />
+    <ClInclude Include="ReplayBot\BWEM\src\winutils.h" />
+    <ClInclude Include="ReplayBot\Common.h" />
+    <ClInclude Include="ReplayBot\Config.h" />
+    <ClInclude Include="ReplayBot\GameCommander.h" />
+    <ClInclude Include="ReplayBot\InformationManager.h" />
+    <ClInclude Include="ReplayBot\MapTools.h" />
+    <ClInclude Include="ReplayBot\MyBotModule.h" />
+    <ClInclude Include="ReplayBot\LoggingManager.h" />
+    <ClInclude Include="ReplayBot\UnitData.h" />
+    <ClInclude Include="ReplayBot\UnitInfo.h" />
+    <ClInclude Include="ReplayBot\UXManager.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <Text Include="ReplayBot\BWEM\LICENSE.txt" />
+    <Text Include="ReplayBot\BWEM\README.txt" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="ReplayBot\BWEM\doc\html\about.html" />
+    <None Include="ReplayBot\BWEM\doc\html\download.html" />
+    <None Include="ReplayBot\BWEM\doc\html\faq.html" />
+    <None Include="ReplayBot\BWEM\doc\html\features.html" />
+    <None Include="ReplayBot\BWEM\doc\html\help.html" />
+    <None Include="ReplayBot\BWEM\doc\html\index.html" />
+    <None Include="ReplayBot\BWEM\doc\html\interactiveIron.html" />
+    <None Include="ReplayBot\BWEM\doc\html\Iron.html" />
+    <None Include="ReplayBot\BWEM\doc\html\start.html" />
+    <None Include="ReplayBot\BWEM\doc\html\Stone.html" />
+    <None Include="ReplayBot\BWEM\doc\html\style.css" />
+  </ItemGroup>
+  <ItemGroup>
+    <Image Include="ReplayBot\BWEM\doc\html\Andromeda.png" />
+    <Image Include="ReplayBot\BWEM\doc\html\Baby Steps.png" />
+    <Image Include="ReplayBot\BWEM\doc\html\Great Barrier Reef.png" />
+    <Image Include="ReplayBot\BWEM\doc\html\Heartbreak Ridge.png" />
+    <Image Include="ReplayBot\BWEM\doc\html\Iron.jpg" />
+    <Image Include="ReplayBot\BWEM\doc\html\Ride of Valkyries.png" />
+    <Image Include="ReplayBot\BWEM\doc\html\Stone.jpg" />
+  </ItemGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+  <ImportGroup Label="ExtensionTargets">
+  </ImportGroup>
+</Project>

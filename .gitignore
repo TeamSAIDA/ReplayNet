@@ -1,32 +1,52 @@
-# Prerequisites
-*.d
+# Compiled files
 
-# Compiled Object files
 *.slo
 *.lo
 *.o
 *.obj
-
-# Precompiled Headers
-*.gch
-*.pch
-
-# Compiled Dynamic libraries
+*.tlog
 *.so
 *.dylib
 *.dll
-
-# Fortran module files
-*.mod
-*.smod
-
-# Compiled Static libraries
 *.lai
 *.la
 *.a
 *.lib
+*.log
+*.lastbuildstate
 
 # Executables
-*.exe
+
 *.out
 *.app
+*.exe
+
+# Other
+
+*.exp
+*.pdb
+*.ilk
+
+# VC++
+
+*.htm
+*.dep
+*.idb
+*.pdb
+*.ncb
+*.sdf
+*.opensdf
+*.suo
+
+
+# VC++ Directory
+
+Release
+Debug
+.vs
+
+
+# Eclipse Directory
+
+bin
+bwapi-data

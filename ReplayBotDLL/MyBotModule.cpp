@@ -66,15 +66,21 @@ void MyBotModule::onStart(){
 	// Fastest: 42 ms/frame.  1초에 24 frame. 일반적으로 1초에 24frame을 기준 게임속도로 합니다
 	// Normal: 67 ms/frame. 1초에 15 frame
 	// As fast as possible : 0 ms/frame. CPU가 할수있는 가장 빠른 속도. 
-	BWAPI::Broodwar->setLocalSpeed(Config::BWAPIOptions::SetLocalSpeed);
+	//BWAPI::Broodwar->setLocalSpeed(Config::BWAPIOptions::SetLocalSpeed);
+	BWAPI::Broodwar->setLocalSpeed(0);
+	
 	// frameskip을 늘리면 화면 표시도 업데이트 안하므로 훨씬 빠릅니다
-	BWAPI::Broodwar->setFrameSkip(Config::BWAPIOptions::SetFrameSkip);
+	//BWAPI::Broodwar->setFrameSkip(Config::BWAPIOptions::SetFrameSkip);
+	BWAPI::Broodwar->setFrameSkip(10000000);
 
-	std::cout << "Map analyzing started" << std::endl;
+	// 화면 표시를 아예 하지 않음으로써 리플레이 파싱 속도를 극대화합니다
+	BWAPI::Broodwar->setGUI(false);
+
+	//std::cout << "Map analyzing started" << std::endl;
 	BWTA::readMap();
 	BWTA::analyze();
 	BWTA::buildChokeNodes();
-	std::cout << "Map analyzing finished" << std::endl;
+	//std::cout << "Map analyzing finished" << std::endl;
 
 	gameCommander.onStart();
 }

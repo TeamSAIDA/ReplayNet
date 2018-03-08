@@ -1,4 +1,4 @@
-ï»¿/*
+/*
 +----------------------------------------------------------------------+
 | ReplayBot                                                            |
 +----------------------------------------------------------------------+
@@ -29,19 +29,13 @@ using namespace BWAPI;
 using namespace BWTA;
 using namespace MyBot;
 
-MyBotModule::MyBotModule(){
-}
-
-MyBotModule::~MyBotModule(){
-}
-
 void MyBotModule::onStart(){
 
 	time_t t;
 	srand((unsigned int)(time(&t)));
 
-	// Config íŒŒì¼ ê´€ë¦¬ê°€ ë²ˆê±°ë¡­ê³ , ë°°í¬ ë° ì‚¬ìš©ì‹œ Config íŒŒì¼ ìœ„ì¹˜ë¥¼ ì§€ì •í•´ì£¼ëŠ” ê²ƒì´ ë²ˆê±°ë¡­ê¸° ë•Œë¬¸ì—, 
-	// Config ë¥¼ íŒŒì¼ë¡œë¶€í„° ì½ì–´ë“¤ì´ì§€ ì•Šê³ , Config í´ëž˜ìŠ¤ì˜ ê°’ì„ ì‚¬ìš©í•˜ë„ë¡ í•©ë‹ˆë‹¤.
+	// Config ÆÄÀÏ °ü¸®°¡ ¹ø°Å·Ó°í, ¹èÆ÷ ¹× »ç¿ë½Ã Config ÆÄÀÏ À§Ä¡¸¦ ÁöÁ¤ÇØÁÖ´Â °ÍÀÌ ¹ø°Å·Ó±â ¶§¹®¿¡, 
+	// Config ¸¦ ÆÄÀÏ·ÎºÎÅÍ ÀÐ¾îµéÀÌÁö ¾Ê°í, Config Å¬·¡½ºÀÇ °ªÀ» »ç¿ëÇÏµµ·Ï ÇÕ´Ï´Ù.
 	if (Config::BWAPIOptions::EnableCompleteMapInformation)
 	{
 		BWAPI::Broodwar->enableFlag(BWAPI::Flag::CompleteMapInformation);
@@ -69,18 +63,24 @@ void MyBotModule::onStart(){
 	}
 
 	// Speedups for automated play, sets the number of milliseconds bwapi spends in each frame
-	// Fastest: 42 ms/frame.  1ì´ˆì— 24 frame. ì¼ë°˜ì ìœ¼ë¡œ 1ì´ˆì— 24frameì„ ê¸°ì¤€ ê²Œìž„ì†ë„ë¡œ í•©ë‹ˆë‹¤
-	// Normal: 67 ms/frame. 1ì´ˆì— 15 frame
-	// As fast as possible : 0 ms/frame. CPUê°€ í• ìˆ˜ìžˆëŠ” ê°€ìž¥ ë¹ ë¥¸ ì†ë„. 
-	BWAPI::Broodwar->setLocalSpeed(Config::BWAPIOptions::SetLocalSpeed);
-	// frameskipì„ ëŠ˜ë¦¬ë©´ í™”ë©´ í‘œì‹œë„ ì—…ë°ì´íŠ¸ ì•ˆí•˜ë¯€ë¡œ í›¨ì”¬ ë¹ ë¦…ë‹ˆë‹¤
-	BWAPI::Broodwar->setFrameSkip(Config::BWAPIOptions::SetFrameSkip);
+	// Fastest: 42 ms/frame.  1ÃÊ¿¡ 24 frame. ÀÏ¹ÝÀûÀ¸·Î 1ÃÊ¿¡ 24frameÀ» ±âÁØ °ÔÀÓ¼Óµµ·Î ÇÕ´Ï´Ù
+	// Normal: 67 ms/frame. 1ÃÊ¿¡ 15 frame
+	// As fast as possible : 0 ms/frame. CPU°¡ ÇÒ¼öÀÖ´Â °¡Àå ºü¸¥ ¼Óµµ. 
+	//BWAPI::Broodwar->setLocalSpeed(Config::BWAPIOptions::SetLocalSpeed);
+	BWAPI::Broodwar->setLocalSpeed(0);
 	
-	std::cout << "Map analyzing started" << std::endl;
+	// frameskipÀ» ´Ã¸®¸é È­¸é Ç¥½Ãµµ ¾÷µ¥ÀÌÆ® ¾ÈÇÏ¹Ç·Î ÈÎ¾À ºü¸¨´Ï´Ù
+	//BWAPI::Broodwar->setFrameSkip(Config::BWAPIOptions::SetFrameSkip);
+	BWAPI::Broodwar->setFrameSkip(10000000);
+
+	// È­¸é Ç¥½Ã¸¦ ¾Æ¿¹ ÇÏÁö ¾ÊÀ½À¸·Î½á ¸®ÇÃ·¹ÀÌ ÆÄ½Ì ¼Óµµ¸¦ ±Ø´ëÈ­ÇÕ´Ï´Ù
+	BWAPI::Broodwar->setGUI(false);
+
+	//std::cout << "Map analyzing started" << std::endl;
 	BWTA::readMap();
 	BWTA::analyze();
 	BWTA::buildChokeNodes();
-	std::cout << "Map analyzing finished" << std::endl;
+	//std::cout << "Map analyzing finished" << std::endl;
 
 	gameCommander.onStart();
 }
@@ -90,18 +90,18 @@ void MyBotModule::onEnd(bool isWinner){
 }
 
 void MyBotModule::onFrame(){
-		
+
 	gameCommander.onFrame();
 
-	// í™”ë©´ ì¶œë ¥ ë° ì‚¬ìš©ìž ìž…ë ¥ ì²˜ë¦¬
-	// ë¹Œë“œì„œë²„ì—ì„œëŠ” Dependencyê°€ ì—†ëŠ” ë¹Œë“œì„œë²„ ì „ìš© UXManager ë¥¼ ì‹¤í–‰ì‹œí‚µë‹ˆë‹¤
+	// È­¸é Ãâ·Â ¹× »ç¿ëÀÚ ÀÔ·Â Ã³¸®
+	// ºôµå¼­¹ö¿¡¼­´Â Dependency°¡ ¾ø´Â ºôµå¼­¹ö Àü¿ë UXManager ¸¦ ½ÇÇà½ÃÅµ´Ï´Ù
 	UXManager::Instance().update();
 
 	// BasicBot 1.1 Patch End //////////////////////////////////////////////////
 }
 
 // BasicBot 1.1 Patch Start ////////////////////////////////////////////////
-// íƒ€ìž„ì•„ì›ƒ íŒ¨ë°°, ìžë™ íŒ¨ë°° ì²´í¬ ì¶”ê°€
+// Å¸ÀÓ¾Æ¿ô ÆÐ¹è, ÀÚµ¿ ÆÐ¹è Ã¼Å© Ãß°¡
 
 void MyBotModule::onUnitCreate(BWAPI::Unit unit){
 	gameCommander.onUnitCreate(unit);
@@ -112,8 +112,12 @@ void MyBotModule::onUnitDestroy(BWAPI::Unit unit){
 
 	try
 	{
-		if (unit->getType().isMineralField())    theMap.OnMineralDestroyed(unit);
-		else if (unit->getType().isSpecialBuilding()) theMap.OnStaticBuildingDestroyed(unit);
+		if (unit->getType().isMineralField()) {
+			//theMap.OnMineralDestroyed(unit);
+		}
+		else if (unit->getType().isSpecialBuilding()) {
+			theMap.OnStaticBuildingDestroyed(unit);
+		}
 	}
 	catch (const std::exception & e)
 	{
@@ -189,7 +193,7 @@ void MyBotModule::onSendText(std::string text)
 	ParseTextCommand(text);
 
 	gameCommander.onSendText(text);
-		
+
 	BWAPI::Broodwar->sendText("%s", text.c_str());
 
 	BWEM::utils::MapDrawer::ProcessCommand(text);

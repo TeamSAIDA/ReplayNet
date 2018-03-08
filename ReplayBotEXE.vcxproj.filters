@@ -88,6 +88,9 @@
     <ClCompile Include="ReplayBotEXE\LoggingManager.cpp">
       <Filter>BotSource</Filter>
     </ClCompile>
+    <ClCompile Include="ReplayBotEXE\BWTA\MapData.cpp">
+      <Filter>BWTA</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="ReplayBotEXE\MyBotModule.h">
@@ -177,6 +180,12 @@
     <ClInclude Include="ReplayBotEXE\LoggingManager.h">
       <Filter>BotSource</Filter>
     </ClInclude>
+    <ClInclude Include="ReplayBotEXE\BWTA\MapData.h">
+      <Filter>BWTA</Filter>
+    </ClInclude>
+    <ClInclude Include="ReplayBotEXE\BWTA\TileType.h">
+      <Filter>BWTA</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="BotSource">
@@ -205,6 +214,9 @@
     </Filter>
     <Filter Include="BWEM\EasyBMP">
       <UniqueIdentifier>{16556d8f-be1e-4934-ba24-153ec0755465}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="BWTA">
+      <UniqueIdentifier>{17fb8d79-5c52-4c33-8c02-ec7df441c1be}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>

@@ -61,8 +61,12 @@ namespace MyBot
 
 		/// static singleton 객체를 리턴합니다
 		static InformationManager & Instance();
-		
-		BWAPI::Playerset	activePlayers;	///< 살아있는 Player 들의 목록
+
+		/// 리플레이 로그 파일의 총 프레임 수
+		int															replayTotalFrameCount;
+
+		/// 실제로 게임을 플레이하는 Player 들의 목록
+		BWAPI::Playerset		activePlayers;	
 		
 		/// Unit 및 BaseLocation, ChokePoint 등에 대한 정보를 업데이트합니다
 		void                    update();

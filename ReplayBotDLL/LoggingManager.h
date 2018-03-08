@@ -6,13 +6,15 @@
 #include "InformationManager.h"
 #include "LoggingManager.h"
 
+//#include ".\BWTA\MapData.h" 
+
 namespace MyBot
 {
 	/// 로깅 을 수행하는 코드가 들어가는 class
 	class LoggingManager
 	{
 		LoggingManager();
-
+		
 	public:
 		/// static singleton 객체를 리턴합니다
 		static LoggingManager &	Instance();
@@ -28,12 +30,44 @@ namespace MyBot
 
 		void onUnitCreate(BWAPI::Unit unit);
 		void onUnitMorph(BWAPI::Unit unit);
+
+
+		///경기 후 맵에 대한 정보를 저장
+		void makeMapData(string mapHash);
+
+		//게임 Frame Count
+		int gameFrameCount;
+		string fileOwner;
+		string firstPlayerTribe;
+		string firstPlayerStartingPointX;
+		string firstPlayerStartingPointY;
+		string firstPlayerOutcome;
+		string secondPlayerTribe;
+		string secondPlayerStartingPointX;
+		string secondPlayerStartingPointY;
+		string secondPlayerOutcome;
+
 	private:
 
 		std::string LogFilename;
 		std::string LogFileFullPath;
+		std::string logfilePath;
+
+		std::string mapInfoFileName;
+		std::string mapInfoFileFullPath;
+		std::string mapFileName;
+
+		// load map info
+		int mapWidthTileRes;
+		int mapWidthPixelRes;
+		int mapWidthWalkRes;
+
+		int mapHeightTileRes;
+		int mapHeightPixelRes;
+		int mapHeightWalkRes;
 
 		std::ofstream replayDat;
+		std::ofstream mapDat;
 
 		/// 각 플레이어의 인구수를 저장합니다
 		void saveSupplyLog();
@@ -49,7 +83,7 @@ namespace MyBot
 
 		/// 게임 승리 / 패배 플레이어를 저장합니다
 		void saveGameResult();
-
+		
 		/// 해당 플레이어가 패배했다고 저장합니다
 		void printLoserPlayer(BWAPI::Player p);
 

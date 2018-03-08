@@ -1,4 +1,6 @@
 ﻿#include "LoggingManager.h"
+#include <io.h>
+#include "BWEM/src/bwem.h"      // update the path if necessary
 
 using namespace MyBot;
 
@@ -9,36 +11,47 @@ LoggingManager & LoggingManager::Instance()
 }
 
 LoggingManager::LoggingManager()
+	:gameFrameCount(0)
+	, firstPlayerOutcome("D")
+	, secondPlayerOutcome("D")
 {
 }
+
 
 void LoggingManager::onStart()
 {
 	// 리플레이 로그 파일 이름 : ReplayBot_숫자.csv
-	long long startTime = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now().time_since_epoch()).count();
-	LogFilename = Config::BotInfo::BotName + "_" + to_string(startTime) + ".csv";
-	LogFileFullPath = "bwapi-data\\write\\" + LogFilename;
 
+	long long startTime = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now().time_since_epoch()).count();
+	//데이터의 출처에 따라 hard cording
+	fileOwner = "CHS";
+	LogFilename = Config::BotInfo::BotName + "_" + to_string(startTime) + ".csv";
+	logfilePath = "bwapi-data\\write\\";
+	LogFileFullPath = logfilePath + LogFilename;
+	if (InformationManager::Instance().activePlayers.size() != 2){
+		return;
+	}
 	replayDat.open(LogFileFullPath.c_str());
-	
+
 	// 리플레이 로그 파일 첫번째 줄 : [StartGame]
 	replayDat << "[StartGame]\n";
 
-	// 리플레이 로그 파일 두번째 줄 : 맵파일이름(리플레이파일이름), 맵이름, 맵 최대플레이어수, 플레이어수, 총 프레임수
-	replayDat << InformationManager::Instance().getMapFileName() 
+	// 리플레이 로그 파일 두번째 줄 : 맵파일이름(리플레이파일이름), 맵이름, 맵 최대플레이어수, 플레이어수
+	replayDat << "MapFileName, MapName, MapPlayerLimit, activePlayers" << '\n';
+	replayDat << InformationManager::Instance().getMapFileName()
 		<< ", " << InformationManager::Instance().getMapName()
 		<< ", " << InformationManager::Instance().getMapPlayerLimit()
 		<< ", " << InformationManager::Instance().activePlayers.size()
-		<< ", " << InformationManager::Instance().replayTotalFrameCount
 		<< "\n";
 
 	// 리플레이 로그 파일 세번째 줄 ~ : 플레이어 ID, 플레이어 이름, 종족, StartLocation X좌표, StartLocation Y좌표
+	replayDat << "플레이어 ID, 플레이어 이름, 종족, StartLocation X좌표, StartLocation Y좌표" << '\n';
 	for (const auto& p : InformationManager::Instance().activePlayers) {
-		replayDat << p->getID() 
-			<< ", " << p->getName() 
-			<< ", " << p->getRace().getName() 
-			<< ", " << p->getStartLocation().x 
-			<< ", " << p->getStartLocation().y 
+		replayDat << p->getID()
+			<< ", " << p->getName()
+			<< ", " << p->getRace().getName()
+			<< ", " << p->getStartLocation().x
+			<< ", " << p->getStartLocation().y
 			<< '\n';
 	}
 }
@@ -47,18 +60,170 @@ void LoggingManager::onEnd(bool isWinner)
 {	
 	saveGameResult();
 
+
+	//리플레이 로그파일 validation for delete
+	boolean isValidation = false;
+	if (firstPlayerOutcome != secondPlayerOutcome){
+		isValidation = true;
+	}
+
+
+	//리플레이 로그파일 rename
+	string mapName = InformationManager::Instance().getMapName().c_str();
+	string tempStr;
+	const char* mapNameText = mapName.c_str();
+	char numNpoint[] = "1234567890";
+	for (unsigned int i = 0; i < strlen(mapNameText); i++)
+	{
+		if ((mapNameText[i] & 0x80) == 0x80 || isalpha(mapNameText[i]))
+		{
+			tempStr = tempStr + mapNameText[i];
+		}
+		else{
+			for (unsigned int j = 0; j < strlen(numNpoint); ++j){
+				if (numNpoint[j] == mapNameText[i]) tempStr = tempStr + mapNameText[i];
+			}
+		}
+
+	}
+	mapName = tempStr;
+	string mapHashVal = BWAPI::Broodwar->mapHash();
+
+	int mapPlayerLimit = BWAPI::Broodwar->getStartLocations().size();
+
+
+
+	boolean isFirstPlyer = true;
+	for (const auto& p : InformationManager::Instance().activePlayers){
+		if (isFirstPlyer)
+		{
+			firstPlayerTribe = p->getRace().getName().substr(0, 1);
+			firstPlayerStartingPointX = to_string(p->getStartLocation().x);
+			firstPlayerStartingPointY = to_string(p->getStartLocation().y);
+			isFirstPlyer = false;
+		}
+		else
+		{
+			secondPlayerTribe = p->getRace().getName().substr(0, 1);
+			secondPlayerStartingPointX = to_string(p->getStartLocation().x);
+			secondPlayerStartingPointY = to_string(p->getStartLocation().y);
+		}
+	}
+	int renameResult, removeResult;
+	string playDate = InformationManager::Instance().getMapFileName();
+	playDate = playDate.substr(0, 8);
+	//맵이름_맵해시값_가능플레이어수_1번플레이어종족_1번플레이어스타팅포인트X_1번플레이어스타팅포인트Y_1번플레이어승패_2번플레이어종족_2번플레이어스타팅포인트X_2번플레이어스타팅포인트Y_2번플레이어승패_총프레임카운트_경기날짜_출처
+	std::string newFileName = logfilePath + mapName + "_" + mapHashVal + "_" + std::to_string(mapPlayerLimit) + "_" + firstPlayerTribe + "_" + firstPlayerStartingPointX + "_" + firstPlayerStartingPointY + "_" + firstPlayerOutcome + "_"
+		+ secondPlayerTribe + "_" + secondPlayerStartingPointX + "_" + secondPlayerStartingPointY + "_" + secondPlayerOutcome + "_" + std::to_string(gameFrameCount) + "_" + fileOwner + ".csv";
+
+	const char* newLogfileName = newFileName.c_str();
+	const char* oldLogfileName = LogFileFullPath.c_str();
+
+	const char* removeFilePath = newLogfileName;
+	
 	// 리플레이 로그 파일 마지막 줄 : [EndGame]
+	replayDat << newFileName + '\n';
 	replayDat << "[EndGame]\n";
 	replayDat.flush();
 	replayDat.close();
+
+	renameResult = rename(oldLogfileName, newLogfileName);
+	if (isValidation || renameResult != 0)
+	{
+		//removeResult = remove(removeFilePath);
+	}
+
+	//맵 정보 가져오기
+	boolean isNewMap = true;
+	_finddata_t fd;
+	long handle;
+	int result = 1;
+	string DIRpath = logfilePath + "mapInfo\\*.*";
+	handle = _findfirst(DIRpath.c_str(), &fd);  //현재 폴더 내 모든 파일을 찾는다.
+	while (result != -1)
+	{
+		string str = fd.name;
+		str = str.substr(0, str.size() - 4);
+		if (str == mapHashVal) isNewMap = false;
+		result = _findnext(handle, &fd);
+	}
+	_findclose(handle);
+	if (isNewMap){
+		makeMapData(mapHashVal);
+	}
+}
+
+
+void LoggingManager::makeMapData(string mapHashVal)
+{
+	mapInfoFileName = mapHashVal;
+	mapInfoFileFullPath = logfilePath + "mapInfo\\" + mapInfoFileName + ".csv";
+	mapDat.open(mapInfoFileFullPath.c_str());
+
+	// load map name
+	mapFileName = BWAPI::Broodwar->mapFileName();
+
+	// load map info
+	mapWidthTileRes = BWAPI::Broodwar->mapWidth();
+	mapWidthPixelRes = mapWidthTileRes * TILE_SIZE;
+	mapWidthWalkRes = mapWidthTileRes * 4;
+
+	mapHeightTileRes = BWAPI::Broodwar->mapHeight();
+	mapHeightPixelRes = mapHeightTileRes * TILE_SIZE;
+	mapHeightWalkRes = mapHeightTileRes * 4;
+	// 맵 정보 생성 파일 첫번째 줄 : [Start]
+	mapDat << "[Start]\n";
+	mapDat << "지나갈 수 있는 곳은 1 아닌 곳은 0\n";
+	mapDat << "mapWidthWalkRes : " + mapWidthWalkRes;
+	mapDat << "mapHeightWalkRes : " + mapHeightWalkRes;
+	mapDat << "\n";
+	for (int i = 0; i < mapHeightWalkRes; i++){
+		for (int j = 0; j < mapWidthWalkRes; j++){
+			BWAPI::WalkPosition walkPosition;
+			walkPosition.x = j;
+			walkPosition.y = i;
+			int info;
+			if (BWAPI::Broodwar->isWalkable(walkPosition)) info = 1;
+			else info = 0;
+			if (j != 0) mapDat << " ";
+			mapDat << info;
+		}
+		mapDat << "\n";
+	}
+	mapDat << "\n";
+	///     - 0: Low ground
+	///     - 1: Low ground doodad
+	///     - 2: High ground
+	///     - 3: High ground doodad
+	///     - 4: Very high ground
+	///     - 5: Very high ground doodad
+	mapDat << "높이에 따라 숫자(0: Low ground, 5: Very high ground doodad\n";
+	mapDat << "mapWidthWalkRes : " + mapWidthWalkRes;
+	mapDat << "mapHeightWalkRes : " + mapHeightWalkRes;
+	mapDat << "\n";
+	for (int i = 0; i < mapHeightWalkRes; i++){
+		for (int j = 0; j < mapWidthWalkRes; j++){
+			BWAPI::TilePosition tilePosition;
+			tilePosition.x = j % 4;
+			tilePosition.y = i % 4;
+			int info = BWAPI::Broodwar->getGroundHeight(tilePosition);
+			if (j != 0) mapDat << " ";
+			mapDat << info;
+		}
+		mapDat << "\n";
+	}
+
+	// 맵 정보 생성 파일 마지막 줄 : [End]
+	mapDat << "[End]\n";
+	mapDat.flush();
+	mapDat.close();
 }
 
 void LoggingManager::update()
 {
 	saveSupplyLog();
 
-	//saveUnitsLog();
-
+	saveUnitsLog();
 }
 
 void LoggingManager::onUnitCreate(BWAPI::Unit unit)
@@ -93,27 +258,346 @@ void LoggingManager::saveUnitsLog()
 	if (BWAPI::Broodwar->getFrameCount() % 100 != 0) {
 		return;
 	}
-
-
+	int CompletedUnitSize = 0;
+	for (const auto& p : InformationManager::Instance().activePlayers){
+		for (auto & unit : p->getUnits())
+		{
+			if (unit != nullptr && unit->isCompleted()) CompletedUnitSize++;
+		}
+	}
+	replayDat << "start-activeList" << '\n';
+	replayDat << "size : " << CompletedUnitSize << '\n';
+	replayDat << "getID, getFrameCount, getName, getID, getHitPoints, getPosition.x, getPosition.y, isAttacking, isUnderAttack, exists, getAcidSporeCount, getAirWeaponCooldown, getAngle, getBottom, getCarrier, getDefenseMatrixPoints, getDefenseMatrixTimer, getEnergy, getEnsnareTimer, getGroundWeaponCooldown, getHitPoints, getID, getInitialHitPoints, getInitialPosition.x, getInitialPosition.y, getInitialResources, getInitialTilePosition.x, getInitialTilePosition.y, getInterceptorCount, getIrradiateTimer, getKillCount, getLastCommandFrame, getLeft, getLockdownTimer, getMaelstromTimer, getOrderTargetPosition.x, getOrderTargetPosition.y, getOrderTimer, getPlagueTimer, getRallyPosition.x, getRallyPosition.y, getRemainingBuildTime, getRemainingResearchTime, getRemainingTrainTime, getRemainingUpgradeTime, getRemoveTimer, getReplayID, getResourceGroup, getResources, getRight, getScarabCount, getShields, getSpaceRemaining, getSpellCooldown, getSpiderMineCount, getStasisTimer, getStimTimer, getTargetPosition.x, getTargetPosition.y, getTilePosition.x, getTilePosition.y, getTop, getVelocityX, getVelocityY, hasNuke, isAccelerating, isAttackFrame, isAttacking, isBeingConstructed, isBeingGathered, isBeingHealed, isBlind, isBraking, isBurrowed, isCarryingGas, isCarryingMinerals, isCloaked, isCompleted, isConstructing, isDefenseMatrixed, isDetected, isEnsnared, isFlying, isFollowing, isGatheringGas, isGatheringMinerals, isHallucination, isHoldingPosition, isIdle, isInterruptible, isInvincible, isIrradiated, isLifted, isLoaded, isLockedDown, isMaelstrommed, isMorphing, isMoving, isParasited, isPatrolling, isPlagued, isPowered, isRepairing, isResearching, isSelected, isSieged, isStartingAttack, isStasised, isStimmed, isStuck, isTargetable, isTraining, isUnderAttack, isUnderDarkSwarm, isUnderDisruptionWeb, isUnderStorm, isUpgrading,burrow, unburrow, cloak, decloak, siege, unsiege, lift, haltConstruction, cancelConstruction, cancelAddon, cancelMorph, cancelResearch, cancelUpgrade, canCommand " << '\n';
+	BWAPI::Player p1;
+	BWAPI::Player p2;
+	if (gameFrameCount < BWAPI::Broodwar->getFrameCount()){
+		gameFrameCount = BWAPI::Broodwar->getFrameCount();
+	}
+	for (const auto& p : InformationManager::Instance().activePlayers){
+		if (p1 == nullptr) p1 = p;
+		else p2 = p;
+	}
 	for (const auto& p : InformationManager::Instance().activePlayers) {
+		BWAPI::Player activePlayer = p;
+		BWAPI::Player enemyPlayer;
+
+		if (p2 == p) enemyPlayer = p1;
+		else enemyPlayer = p2;
 
 		for (auto & unit : p->getUnits())
 		{
+			BWAPI::Unit targetUnit = unit->getTarget();
+			BWAPI::Position targetPosition = unit->getTargetPosition();
+			//BWAPI::TilePosition targetTilePosition = targetUnit->getTilePosition();
+			BWAPI::UnitType unitType = unit->getType();
+			BWAPI::TechType techType = unit->getTech();
+			BWAPI::UpgradeType upgradeType = unit->getUpgrade();
 			if (unit != nullptr && unit->isCompleted())
 			{
 				replayDat << p->getID()
 					<< ", " << BWAPI::Broodwar->getFrameCount()
-					<< ", " << unit->getType().getName() 
+					<< ", " << unit->getType().getName()
 					<< ", " << unit->getID()
 					<< ", " << unit->getHitPoints()
 					<< ", " << unit->getPosition().x
 					<< ", " << unit->getPosition().y
 					<< ", " << unit->isAttacking()
 					<< ", " << unit->isUnderAttack()
+					<< ", " << unit->exists()
+					<< ", " << unit->getAcidSporeCount()
+					<< ", " << unit->getAddon() // Unit type
+					<< ", " << unit->getAirWeaponCooldown()
+					<< ", " << unit->getAngle()
+					<< ", " << unit->getBottom()
+					<< ", " << unit->getBuildType() // Unit type
+					<< ", " << unit->getBuildUnit() // Unit
+					<< ", " << unit->getCarrier()
+					//<< ", " << unit->getClosestUnit(const UnitFilter &pred = nullptr, int radius = 999999)
+					<< ", " << unit->getDefenseMatrixPoints()
+					<< ", " << unit->getDefenseMatrixTimer()
+					//<< ", " << unit->getDistance(Position target)
+					//<< ", " << unit->getDistance(Unit target)
+					<< ", " << unit->getEnergy()
+					<< ", " << unit->getEnsnareTimer()
+					<< ", " << unit->getGroundWeaponCooldown()
+					<< ", " << unit->getHatchery() // Unit
+					<< ", " << unit->getHitPoints()
+					<< ", " << unit->getID()
+					<< ", " << unit->getInitialHitPoints()
+					<< ", " << unit->getInitialPosition().x
+					<< ", " << unit->getInitialPosition().y
+					<< ", " << unit->getInitialResources()
+					<< ", " << unit->getInitialTilePosition().x
+					<< ", " << unit->getInitialTilePosition().y
+					<< ", " << unit->getInitialType() // Unit type
+					<< ", " << unit->getInterceptorCount()
+					//<< ", " << unit->getInterceptors() // Unitset
+					<< ", " << unit->getIrradiateTimer()
+					<< ", " << unit->getKillCount()
+					//<< ", " << unit->getLarva() // Unitset
+					<< ", " << unit->getLastAttackingPlayer() //BWAPI::Player
+					//<< ", " << unit->getLastCommand()// BWAPI::UnitCommand
+					<< ", " << unit->getLastCommandFrame()
+					<< ", " << unit->getLeft()
+					//<< ", " << unit->getLoadedUnits() // Unitset
+					<< ", " << unit->getLockdownTimer()
+					<< ", " << unit->getMaelstromTimer()
+					<< ", " << unit->getNydusExit() //Unit
+					<< ", " << unit->getOrder() //Order
+					<< ", " << unit->getOrderTarget() // Unit
+					<< ", " << unit->getOrderTargetPosition().x
+					<< ", " << unit->getOrderTargetPosition().y
+					<< ", " << unit->getOrderTimer()
+					<< ", " << unit->getPlagueTimer()
+					<< ", " << unit->getPlayer() // Player
+					<< ", " << unit->getPowerUp() //Unit
+					<< ", " << unit->getRallyPosition().x
+					<< ", " << unit->getRallyPosition().y
+					<< ", " << unit->getRallyUnit() //Unit
+					<< ", " << unit->getRegion() //BWAPI::region
+					<< ", " << unit->getRemainingBuildTime()
+					<< ", " << unit->getRemainingResearchTime()
+					<< ", " << unit->getRemainingTrainTime()
+					<< ", " << unit->getRemainingUpgradeTime()
+					<< ", " << unit->getRemoveTimer()
+					<< ", " << unit->getReplayID()
+					<< ", " << unit->getResourceGroup()
+					<< ", " << unit->getResources()
+					<< ", " << unit->getRight()
+					<< ", " << unit->getScarabCount()
+					<< ", " << unit->getSecondaryOrder() //Order
+					<< ", " << unit->getShields()
+					<< ", " << unit->getSpaceRemaining()
+					<< ", " << unit->getSpellCooldown()
+					<< ", " << unit->getSpiderMineCount()
+					<< ", " << unit->getStasisTimer()
+					<< ", " << unit->getStimTimer()
+					<< ", " << unit->getTarget() //Unit
+					<< ", " << unit->getTargetPosition().x
+					<< ", " << unit->getTargetPosition().y
+					<< ", " << unit->getTech() //TechType
+					<< ", " << unit->getTilePosition().x
+					<< ", " << unit->getTilePosition().y
+					<< ", " << unit->getTop()
+					//<< ", " << unit->getTrainingQueue() //UnitType
+					<< ", " << unit->getTransport() //Unit
+					<< ", " << unit->getType() //UnitType
+					//<< ", " << unit->getUnitsInRadius(int radius, UnitFilter &pred = nullptr)
+					//<< ", " << unit->getUnitsInWeaponRange(WeaponType weapon, UnitFilter &pred = nullptr)
+					<< ", " << unit->getUpgrade() //UpgradeType
+					<< ", " << unit->getVelocityX()
+					<< ", " << unit->getVelocityY()
+					<< ", " << unit->hasNuke()
+					//<< ", " << unit->hasPath(Position target)
+					<< ", " << unit->hasPath(targetUnit)
+					<< ", " << unit->isAccelerating()
+					<< ", " << unit->isAttackFrame()
+					<< ", " << unit->isAttacking()
+					<< ", " << unit->isBeingConstructed()
+					<< ", " << unit->isBeingGathered()
+					<< ", " << unit->isBeingHealed()
+					<< ", " << unit->isBlind()
+					<< ", " << unit->isBraking()
+					<< ", " << unit->isBurrowed()
+					<< ", " << unit->isCarryingGas()
+					<< ", " << unit->isCarryingMinerals()
+					<< ", " << unit->isCloaked()
+					<< ", " << unit->isCompleted()
+					<< ", " << unit->isConstructing()
+					<< ", " << unit->isDefenseMatrixed()
+					<< ", " << unit->isDetected()
+					<< ", " << unit->isEnsnared()
+					<< ", " << unit->isFlying()
+					<< ", " << unit->isFollowing()
+					<< ", " << unit->isGatheringGas()
+					<< ", " << unit->isGatheringMinerals()
+					<< ", " << unit->isHallucination()
+					<< ", " << unit->isHoldingPosition()
+					<< ", " << unit->isIdle()
+					<< ", " << unit->isInterruptible()
+					<< ", " << unit->isInvincible()
+					<< ", " << unit->isInWeaponRange(targetUnit)
+					<< ", " << unit->isIrradiated()
+					<< ", " << unit->isLifted()
+					<< ", " << unit->isLoaded()
+					<< ", " << unit->isLockedDown()
+					<< ", " << unit->isMaelstrommed()
+					<< ", " << unit->isMorphing()
+					<< ", " << unit->isMoving()
+					<< ", " << unit->isParasited()
+					<< ", " << unit->isPatrolling()
+					<< ", " << unit->isPlagued()
+					<< ", " << unit->isPowered()
+					<< ", " << unit->isRepairing()
+					<< ", " << unit->isResearching()
+					<< ", " << unit->isSelected()
+					<< ", " << unit->isSieged()
+					<< ", " << unit->isStartingAttack()
+					<< ", " << unit->isStasised()
+					<< ", " << unit->isStimmed()
+					<< ", " << unit->isStuck()
+					<< ", " << unit->isTargetable()
+					<< ", " << unit->isTraining()
+					<< ", " << unit->isUnderAttack()
+					<< ", " << unit->isUnderDarkSwarm()
+					<< ", " << unit->isUnderDisruptionWeb()
+					<< ", " << unit->isUnderStorm()
+					<< ", " << unit->isUpgrading()
+
+					//<< ", " << unit->isVisible(activePlayer) // is visible in active player
+					//<< ", " << unit->isVisible(enemyPlayer) // is visible in enemy player
+					//Unit Commands
+					//<< ", " << unit->issueCommand(UnitCommand command) = 0
+					//<< ", " << unit->attack(Position target, bool shiftQueueCommand = false)
+					//<< ", " << unit->attack(Unit target, bool shiftQueueCommand = false)
+					//<< ", " << unit->build(UnitType type, TilePosition target = TilePositions::None)
+					<< ", " << unit->buildAddon(unitType)
+					//<< ", " << unit->train(UnitType type = UnitTypes::None)
+					<< ", " << unit->morph(unitType)
+					<< ", " << unit->research(techType)
+					<< ", " << unit->upgrade(upgradeType)
+					<< ", " << unit->setRallyPoint(targetUnit)
+					//<< ", " << unit->move(Position target, bool shiftQueueCommand = false)
+					//<< ", " << unit->patrol(Position target, bool shiftQueueCommand = false)
+					//<< ", " << unit->holdPosition(bool shiftQueueCommand = false)
+					//<< ", " << unit->stop(bool shiftQueueCommand = false)
+					//<< ", " << unit->follow(Unit target, bool shiftQueueCommand = false)
+					//<< ", " << unit->gather(Unit target, bool shiftQueueCommand = false)
+					//<< ", " << unit->returnCargo(bool shiftQueueCommand = false)
+					//<< ", " << unit->repair(Unit target, bool shiftQueueCommand = false)
+					<< ", " << unit->burrow()
+					<< ", " << unit->unburrow()
+					<< ", " << unit->cloak()
+					<< ", " << unit->decloak()
+					<< ", " << unit->siege()
+					<< ", " << unit->unsiege()
+					<< ", " << unit->lift()
+					///<< ", " << unit->land(targetTilePosition)
+					//<< ", " << unit->load(Unit target, bool shiftQueueCommand = false)
+					<< ", " << unit->unload(targetUnit)
+					//<< ", " << unit->unloadAll(bool shiftQueueCommand = false)
+					//<< ", " << unit->unloadAll(Position target, bool shiftQueueCommand = false)
+					//<< ", " << unit->rightClick(Position target, bool shiftQueueCommand = false)
+					//<< ", " << unit->rightClick(Unit target, bool shiftQueueCommand = false)
+					<< ", " << unit->haltConstruction()
+					<< ", " << unit->cancelConstruction()
+					<< ", " << unit->cancelAddon()
+					//<< ", " << unit->cancelTrain(int slot = -2)
+					<< ", " << unit->cancelMorph()
+					<< ", " << unit->cancelResearch()
+					<< ", " << unit->cancelUpgrade()
+					<< ", " << unit->useTech(techType, targetPosition)
+					//<< ", " << unit->useTech(TechType tech, Unit target = nullptr)
+					///<< ", " << unit->placeCOP(targetTilePosition)
+
+					//Command Verifiers
+					//<< ", " << unit->canIssueCommand(UnitCommand command, bool checkCanUseTechPositionOnPositions = true, bool checkCanUseTechUnitOnUnits = true, bool checkCanBuildUnitType = true, bool checkCanTargetUnit = true, bool checkCanIssueCommandType = true, bool checkCommandibility = true)
+					//<< ", " << unit->canIssueCommandGrouped(UnitCommand command, bool checkCanUseTechPositionOnPositions = true, bool checkCanUseTechUnitOnUnits = true, bool checkCanTargetUnit = true, bool checkCanIssueCommandType = true, bool checkCommandibilityGrouped = true, bool checkCommandibility = true)
+					<< ", " << unit->canCommand()
+					//<< ", " << unit->canCommandGrouped(bool checkCommandibility = true)
+					//<< ", " << unit->canIssueCommandType(UnitCommandType ct, bool checkCommandibility = true)
+					//<< ", " << unit->canIssueCommandTypeGrouped(UnitCommandType ct, bool checkCommandibilityGrouped = true, bool checkCommandibility = true)
+					//<< ", " << unit->canTargetUnit(Unit targetUnit, bool checkCommandibility = true)
+					//<< ", " << unit->canAttack(bool checkCommandibility = true)
+					//<< ", " << unit->canAttack(Position target, bool checkCanTargetUnit = true, bool checkCanIssueCommandType = true, bool checkCommandibility = true)
+					//<< ", " << unit->canAttack(Unit target, bool checkCanTargetUnit = true, bool checkCanIssueCommandType = true, bool checkCommandibility = true)
+					//<< ", " << unit->canAttackGrouped(bool checkCommandibilityGrouped = true, bool checkCommandibility = true)
+					//<< ", " << unit->canAttackGrouped(Position target, bool checkCanTargetUnit = true, bool checkCanIssueCommandType = true, bool checkCommandibilityGrouped = true, bool checkCommandibility = true)
+					/*<< ", " << unit->canAttackGrouped(Unit target, bool checkCanTargetUnit = true, bool checkCanIssueCommandType = true, bool checkCommandibilityGrouped = true, bool checkCommandibility = true)
+					<< ", " << unit->canAttackMove(bool checkCommandibility = true)
+					<< ", " << unit->canAttackMoveGrouped(bool checkCommandibilityGrouped = true, bool checkCommandibility = true)
+					<< ", " << unit->canAttackUnit(bool checkCommandibility = true)
+					<< ", " << unit->canAttackUnit(Unit targetUnit, bool checkCanTargetUnit = true, bool checkCanIssueCommandType = true, bool checkCommandibility = true)
+					<< ", " << unit->canAttackUnitGrouped(bool checkCommandibilityGrouped = true, bool checkCommandibility = true)
+					<< ", " << unit->canAttackUnitGrouped(Unit targetUnit, bool checkCanTargetUnit = true, bool checkCanIssueCommandType = true, bool checkCommandibilityGrouped = true, bool checkCommandibility = true)
+					<< ", " << unit->canBuild(bool checkCommandibility = true)
+					<< ", " << unit->canBuild(UnitType uType, bool checkCanIssueCommandType = true, bool checkCommandibility = true)
+					<< ", " << unit->canBuild(UnitType uType, BWAPI::TilePosition tilePos, bool checkTargetUnitType = true, bool checkCanIssueCommandType = true, bool checkCommandibility = true)
+					<< ", " << unit->canBuildAddon(bool checkCommandibility = true)
+					<< ", " << unit->canBuildAddon(UnitType uType, bool checkCanIssueCommandType = true, bool checkCommandibility = true)
+					<< ", " << unit->canTrain(bool checkCommandibility = true)
+					<< ", " << unit->canTrain(UnitType uType, bool checkCanIssueCommandType = true, bool checkCommandibility = true)
+					<< ", " << unit->canMorph(bool checkCommandibility = true)
+					<< ", " << unit->canMorph(UnitType uType, bool checkCanIssueCommandType = true, bool checkCommandibility = true)
+					<< ", " << unit->canResearch(bool checkCommandibility = true)
+					<< ", " << unit->canResearch(TechType type, bool checkCanIssueCommandType = true)
+					<< ", " << unit->canUpgrade(bool checkCommandibility = true)
+					<< ", " << unit->canUpgrade(UpgradeType type, bool checkCanIssueCommandType = true)
+					<< ", " << unit->canSetRallyPoint(bool checkCommandibility = true)
+					<< ", " << unit->canSetRallyPoint(Position target, bool checkCanTargetUnit = true, bool checkCanIssueCommandType = true, bool checkCommandibility = true)
+					<< ", " << unit->canSetRallyPoint(Unit target, bool checkCanTargetUnit = true, bool checkCanIssueCommandType = true, bool checkCommandibility = true)
+					<< ", " << unit->canSetRallyPosition(bool checkCommandibility = true)
+					<< ", " << unit->canSetRallyUnit(bool checkCommandibility = true)
+					<< ", " << unit->canSetRallyUnit(Unit targetUnit, bool checkCanTargetUnit = true, bool checkCanIssueCommandType = true, bool checkCommandibility = true)
+					<< ", " << unit->canMove(bool checkCommandibility = true)
+					<< ", " << unit->canMoveGrouped(bool checkCommandibilityGrouped = true, bool checkCommandibility = true)
+					<< ", " << unit->canPatrol(bool checkCommandibility = true)
+					<< ", " << unit->canPatrolGrouped(bool checkCommandibilityGrouped = true, bool checkCommandibility = true)
+					<< ", " << unit->canFollow(bool checkCommandibility = true)
+					<< ", " << unit->canFollow(Unit targetUnit, bool checkCanTargetUnit = true, bool checkCanIssueCommandType = true, bool checkCommandibility = true)
+					<< ", " << unit->canGather(bool checkCommandibility = true)
+					<< ", " << unit->canGather(Unit targetUnit, bool checkCanTargetUnit = true, bool checkCanIssueCommandType = true, bool checkCommandibility = true)
+					<< ", " << unit->canReturnCargo(bool checkCommandibility = true)
+					<< ", " << unit->canHoldPosition(bool checkCommandibility = true)
+					<< ", " << unit->canStop(bool checkCommandibility = true)
+					<< ", " << unit->canRepair(bool checkCommandibility = true)
+					<< ", " << unit->canRepair(Unit targetUnit, bool checkCanTargetUnit = true, bool checkCanIssueCommandType = true, bool checkCommandibility = true)
+					<< ", " << unit->canBurrow(bool checkCommandibility = true)
+					<< ", " << unit->canUnburrow(bool checkCommandibility = true)
+					<< ", " << unit->canCloak(bool checkCommandibility = true)
+					<< ", " << unit->canDecloak(bool checkCommandibility = true)
+					<< ", " << unit->canSiege(bool checkCommandibility = true)
+					<< ", " << unit->canUnsiege(bool checkCommandibility = true)
+					<< ", " << unit->canLift(bool checkCommandibility = true)
+					<< ", " << unit->canLand(bool checkCommandibility = true)
+					<< ", " << unit->canLand(TilePosition target, bool checkCanIssueCommandType = true, bool checkCommandibility = true)
+					<< ", " << unit->canLoad(bool checkCommandibility = true)
+					<< ", " << unit->canLoad(Unit targetUnit, bool checkCanTargetUnit = true, bool checkCanIssueCommandType = true, bool checkCommandibility = true)
+					<< ", " << unit->canUnloadWithOrWithoutTarget(bool checkCommandibility = true)
+					<< ", " << unit->canUnloadAtPosition(Position targDropPos, bool checkCanIssueCommandType = true, bool checkCommandibility = true)
+					<< ", " << unit->canUnload(bool checkCommandibility = true)
+					<< ", " << unit->canUnload(Unit targetUnit, bool checkCanTargetUnit = true, bool checkPosition = true, bool checkCanIssueCommandType = true, bool checkCommandibility = true)
+					<< ", " << unit->canUnloadAll(bool checkCommandibility = true)
+					<< ", " << unit->canUnloadAllPosition(bool checkCommandibility = true)
+					<< ", " << unit->canUnloadAllPosition(Position targDropPos, bool checkCanIssueCommandType = true, bool checkCommandibility = true)
+					<< ", " << unit->canRightClick(bool checkCommandibility = true)
+					<< ", " << unit->canRightClick(Position target, bool checkCanTargetUnit = true, bool checkCanIssueCommandType = true, bool checkCommandibility = true)
+					<< ", " << unit->canRightClick(Unit target, bool checkCanTargetUnit = true, bool checkCanIssueCommandType = true, bool checkCommandibility = true)
+					<< ", " << unit->canRightClickGrouped(bool checkCommandibilityGrouped = true, bool checkCommandibility = true)
+					<< ", " << unit->canRightClickGrouped(Position target, bool checkCanTargetUnit = true, bool checkCanIssueCommandType = true, bool checkCommandibilityGrouped = true, bool checkCommandibility = true)
+					<< ", " << unit->canRightClickGrouped(Unit target, bool checkCanTargetUnit = true, bool checkCanIssueCommandType = true, bool checkCommandibilityGrouped = true, bool checkCommandibility = true)
+					<< ", " << unit->canRightClickPosition(bool checkCommandibility = true)
+					<< ", " << unit->canRightClickPositionGrouped(bool checkCommandibilityGrouped = true, bool checkCommandibility = true)
+					<< ", " << unit->canRightClickUnit(bool checkCommandibility = true)
+					<< ", " << unit->canRightClickUnit(Unit targetUnit, bool checkCanTargetUnit = true, bool checkCanIssueCommandType = true, bool checkCommandibility = true)
+					<< ", " << unit->canRightClickUnitGrouped(bool checkCommandibilityGrouped = true, bool checkCommandibility = true)
+					<< ", " << unit->canRightClickUnitGrouped(Unit targetUnit, bool checkCanTargetUnit = true, bool checkCanIssueCommandType = true, bool checkCommandibilityGrouped = true, bool checkCommandibility = true)
+					<< ", " << unit->canHaltConstruction(bool checkCommandibility = true)
+					<< ", " << unit->canCancelConstruction(bool checkCommandibility = true)
+					<< ", " << unit->canCancelAddon(bool checkCommandibility = true)
+					<< ", " << unit->canCancelTrain(bool checkCommandibility = true)
+					<< ", " << unit->canCancelTrainSlot(bool checkCommandibility = true)
+					<< ", " << unit->canCancelTrainSlot(int slot, bool checkCanIssueCommandType = true, bool checkCommandibility = true)
+					<< ", " << unit->canCancelMorph(bool checkCommandibility = true)
+					<< ", " << unit->canCancelResearch(bool checkCommandibility = true)
+					<< ", " << unit->canCancelUpgrade(bool checkCommandibility = true)
+					<< ", " << unit->canUseTechWithOrWithoutTarget(bool checkCommandibility = true)
+					<< ", " << unit->canUseTechWithOrWithoutTarget(BWAPI::TechType tech, bool checkCanIssueCommandType = true, bool checkCommandibility = true)
+					<< ", " << unit->canUseTech(BWAPI::TechType tech, Position target, bool checkCanTargetUnit = true, bool checkTargetsType = true, bool checkCanIssueCommandType = true, bool checkCommandibility = true)
+					<< ", " << unit->canUseTech(BWAPI::TechType tech, Unit target = nullptr, bool checkCanTargetUnit = true, bool checkTargetsType = true, bool checkCanIssueCommandType = true, bool checkCommandibility = true)
+					<< ", " << unit->canUseTechWithoutTarget(BWAPI::TechType tech, bool checkCanIssueCommandType = true, bool checkCommandibility = true)
+					<< ", " << unit->canUseTechUnit(BWAPI::TechType tech, bool checkCanIssueCommandType = true, bool checkCommandibility = true)
+					<< ", " << unit->canUseTechUnit(BWAPI::TechType tech, Unit targetUnit, bool checkCanTargetUnit = true, bool checkTargetsUnits = true, bool checkCanIssueCommandType = true, bool checkCommandibility = true)
+					<< ", " << unit->canUseTechPosition(BWAPI::TechType tech, bool checkCanIssueCommandType = true, bool checkCommandibility = true)
+					<< ", " << unit->canUseTechPosition(BWAPI::TechType tech, Position target, bool checkTargetsPositions = true, bool checkCanIssueCommandType = true, bool checkCommandibility = true)
+					<< ", " << unit->canPlaceCOP(bool checkCommandibility = true)
+					<< ", " << unit->canPlaceCOP(TilePosition target, bool checkCanIssueCommandType = true, bool checkCommandibility = true)
+					*/
 					<< '\n';
 			}
 		}
 	}
+	replayDat << "end-activeList" << '\n';
 }
 
 void LoggingManager::saveUnitCreate(BWAPI::Unit unit)

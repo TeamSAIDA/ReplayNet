@@ -112,6 +112,7 @@
     <ClCompile Include="ReplayBotEXE\BWEM\src\tiles.cpp" />
     <ClCompile Include="ReplayBotEXE\BWEM\src\utils.cpp" />
     <ClCompile Include="ReplayBotEXE\BWEM\src\winutils.cpp" />
+    <ClCompile Include="ReplayBotEXE\BWTA\MapData.cpp" />
     <ClCompile Include="ReplayBotEXE\Common.cpp" />
     <ClCompile Include="ReplayBotEXE\Config.cpp" />
     <ClCompile Include="ReplayBotEXE\GameCommander.cpp" />
@@ -144,6 +145,8 @@
     <ClInclude Include="ReplayBotEXE\BWEM\src\tiles.h" />
     <ClInclude Include="ReplayBotEXE\BWEM\src\utils.h" />
     <ClInclude Include="ReplayBotEXE\BWEM\src\winutils.h" />
+    <ClInclude Include="ReplayBotEXE\BWTA\MapData.h" />
+    <ClInclude Include="ReplayBotEXE\BWTA\TileType.h" />
     <ClInclude Include="ReplayBotEXE\Common.h" />
     <ClInclude Include="ReplayBotEXE\Config.h" />
     <ClInclude Include="ReplayBotEXE\GameCommander.h" />

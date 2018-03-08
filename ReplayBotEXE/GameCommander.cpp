@@ -25,10 +25,10 @@ void GameCommander::onFrame()
 	}
 
 	// 아군 베이스 위치. 적군 베이스 위치. 각 유닛들의 상태정보 등을 Map 자료구조에 저장/업데이트
-	InformationManager::Instance().update();
+	//InformationManager::Instance().update();
 	
 	// 각 유닛의 위치를 자체 MapGrid 자료구조에 저장
-	MapGrid::Instance().update();
+	//MapGrid::Instance().update();
 		
 	LoggingManager::Instance().update();
 
@@ -52,23 +52,23 @@ void GameCommander::onUnitHide(BWAPI::Unit unit)
 
 void GameCommander::onUnitCreate(BWAPI::Unit unit)
 { 
-	InformationManager::Instance().onUnitCreate(unit);
+	//InformationManager::Instance().onUnitCreate(unit);
 
-	LoggingManager::Instance().onUnitCreate(unit);
+	//LoggingManager::Instance().onUnitCreate(unit);
 }
 
 // BasicBot 1.1 Patch Start ////////////////////////////////////////////////
 // 일꾼 탄생/파괴 등에 대한 업데이트 로직 버그 수정 : onUnitShow 가 아니라 onUnitComplete 에서 처리하도록 수정
 void GameCommander::onUnitComplete(BWAPI::Unit unit)
 {
-	InformationManager::Instance().onUnitComplete(unit);
+	//InformationManager::Instance().onUnitComplete(unit);
 }
 
 // BasicBot 1.1 Patch End //////////////////////////////////////////////////
 
 void GameCommander::onUnitDestroy(BWAPI::Unit unit)
 {
-	InformationManager::Instance().onUnitDestroy(unit); 
+	//InformationManager::Instance().onUnitDestroy(unit); 
 }
 
 void GameCommander::onUnitRenegade(BWAPI::Unit unit)
@@ -86,7 +86,7 @@ void GameCommander::onUnitMorph(BWAPI::Unit unit)
 	// Zerg 종족 Worker 의 Morph 에 대한 처리
 //	WorkerManager::Instance().onUnitMorph(unit);
 
-	LoggingManager::Instance().onUnitMorph(unit);
+	//LoggingManager::Instance().onUnitMorph(unit);
 }
 
 void GameCommander::onUnitDiscover(BWAPI::Unit unit)

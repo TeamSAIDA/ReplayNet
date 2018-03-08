@@ -112,8 +112,12 @@ void MyBotModule::onUnitDestroy(BWAPI::Unit unit){
 
 	try
 	{
-		if (unit->getType().isMineralField())    theMap.OnMineralDestroyed(unit);
-		else if (unit->getType().isSpecialBuilding()) theMap.OnStaticBuildingDestroyed(unit);
+		if (unit->getType().isMineralField()) {
+			//theMap.OnMineralDestroyed(unit);
+		}
+		else if (unit->getType().isSpecialBuilding()) {
+			theMap.OnStaticBuildingDestroyed(unit);
+		}
 	}
 	catch (const std::exception & e)
 	{

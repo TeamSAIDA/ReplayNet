@@ -60,13 +60,23 @@ InformationManager::InformationManager()
 		mapName = BWAPI::Broodwar->mapName();
 	}
 
+	// 리플레이 파일의 총 프레임 카운트를 센다
+	replayTotalFrameCount = 0;
+	if (BWAPI::Broodwar->isReplay()) {
+		replayTotalFrameCount = BWAPI::Broodwar->getReplayFrameCount();
+	}
 
+	// 실제로 게임을 플레이하는 ActivePlayer 들의 목록을 만든다
+
+	// TODO : 옵저버 플레이어 제외시키기가 필요하다
 
 	BWAPI::Playerset playerset = BWAPI::Broodwar->getPlayers();
-
+	
 	for (const auto& player : BWAPI::Broodwar->getPlayers()){
+
 		if (!player->getUnits().empty() && !player->isNeutral()) {
-			// TODO you cannot trust this startLocID
+
+			// TODO : you cannot trust this startLocID
 			int startLocID = -1;
 			for (const auto& startLocation : BWAPI::Broodwar->getStartLocations()) {
 				startLocID++;

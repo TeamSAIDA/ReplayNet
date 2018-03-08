@@ -49,6 +49,12 @@ namespace MyBot
 
 		/// 게임 승리 / 패배 플레이어를 저장합니다
 		void saveGameResult();
+		
+		/// 해당 플레이어가 패배했다고 저장합니다
+		void printLoserPlayer(BWAPI::Player p);
+
+		/// 해당 플레이어가 승리했다고 저장합니다
+		void printWinnerPlayer(BWAPI::Player p);
 
 	};
 }

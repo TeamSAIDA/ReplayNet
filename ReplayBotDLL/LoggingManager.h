@@ -14,7 +14,7 @@ namespace MyBot
 	class LoggingManager
 	{
 		LoggingManager();
-		
+
 	public:
 		/// static singleton 객체를 리턴합니다
 		static LoggingManager &	Instance();
@@ -30,7 +30,8 @@ namespace MyBot
 
 		void onUnitCreate(BWAPI::Unit unit);
 		void onUnitMorph(BWAPI::Unit unit);
-
+		/// 맵정보 파일에 미네랄 정보를 저장합니다.
+		void onMineralCheck(BWAPI::Unit unit);
 
 		///경기 후 맵에 대한 정보를 저장
 		void makeMapData(string mapHash);
@@ -66,6 +67,10 @@ namespace MyBot
 		int mapHeightPixelRes;
 		int mapHeightWalkRes;
 
+		int mireralInfoArray[4096][4096];
+		int mireralInfoWalkArray[512][512];
+		int mireralInfoTileArray[128][128];
+
 		std::ofstream replayDat;
 		std::ofstream mapDat;
 
@@ -75,6 +80,7 @@ namespace MyBot
 		/// 각 플레이어의 유닛 현황을 저장합니다
 		void saveUnitsLog();
 
+
 		/// 각 플레이어의 빌드 실행을 저장합니다
 		void saveUnitCreate(BWAPI::Unit unit);
 
@@ -83,7 +89,7 @@ namespace MyBot
 
 		/// 게임 승리 / 패배 플레이어를 저장합니다
 		void saveGameResult();
-		
+
 		/// 해당 플레이어가 패배했다고 저장합니다
 		void printLoserPlayer(BWAPI::Player p);
 

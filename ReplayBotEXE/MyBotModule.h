@@ -99,5 +99,7 @@ namespace MyBot
 		/// 다른 플레이어로부터 텍스트를 전달받았을 때 발생하는 이벤트를 처리합니다
 		void onReceiveText(BWAPI::Player player, std::string text);
 		
+		/// 시작과 동시 맵의 미네랄 및 가스, 중립건물 위치를 저장하는 이벤트를 처리합니다.
+		void onMineralCheck(BWAPI::Unit unit);
 	};
 }

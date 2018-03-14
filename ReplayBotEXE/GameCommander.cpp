@@ -122,3 +122,8 @@ void GameCommander::onReceiveText(BWAPI::Player player, std::string text)
 {	
 }
 
+void GameCommander::onMineralCheck(BWAPI::Unit unit)
+{
+	LoggingManager::Instance().onMineralCheck(unit);
+	//LoggingManager::Instance().onUnitMorph(unit);
+}

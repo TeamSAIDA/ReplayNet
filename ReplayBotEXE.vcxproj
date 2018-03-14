@@ -94,6 +94,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="MapDataManager.cpp" />
     <ClCompile Include="ReplayBotEXE\BWEM\EasyBMP_1.06\EasyBMP.cpp" />
     <ClCompile Include="ReplayBotEXE\BWEM\src\area.cpp" />
     <ClCompile Include="ReplayBotEXE\BWEM\src\base.cpp" />
@@ -126,6 +127,7 @@
     <ClCompile Include="ReplayBotEXE\UXManager.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="MapDataManager.h" />
     <ClInclude Include="ReplayBotEXE\BWEM\EasyBMP_1.06\EasyBMP.h" />
     <ClInclude Include="ReplayBotEXE\BWEM\src\area.h" />
     <ClInclude Include="ReplayBotEXE\BWEM\src\base.h" />

@@ -58,13 +58,15 @@ void LoggingManager::onStart()
 
 void LoggingManager::onEnd(bool isWinner)
 {	
-	saveGameResult();
 
 
 	//리플레이 로그파일 validation for delete
-	boolean isValidation = false;
-	if (firstPlayerOutcome != secondPlayerOutcome){
-		isValidation = true;
+	boolean isValidation = true;
+	if (firstPlayerOutcome == secondPlayerOutcome){ //승패가 예측 되지 않은 경우 리플레이 파일을 만들지 않는다.
+		isValidation = false;
+	}
+	else if (gameFrameCount < 20 * 60 * 3){ //게임 시작 후 3분 이내 끝난 경기의 경우 리플레이 파일을 만들지 않는다.
+		isValidation = false;
 	}
 
 
@@ -113,8 +115,9 @@ void LoggingManager::onEnd(bool isWinner)
 	string playDate = InformationManager::Instance().getMapFileName();
 	playDate = playDate.substr(0, 8);
 	//맵이름_맵해시값_가능플레이어수_1번플레이어종족_1번플레이어스타팅포인트X_1번플레이어스타팅포인트Y_1번플레이어승패_2번플레이어종족_2번플레이어스타팅포인트X_2번플레이어스타팅포인트Y_2번플레이어승패_총프레임카운트_경기날짜_출처
-	std::string newFileName = logfilePath + mapName + "_" + mapHashVal + "_" + std::to_string(mapPlayerLimit) + "_" + firstPlayerTribe + "_" + firstPlayerStartingPointX + "_" + firstPlayerStartingPointY + "_" + firstPlayerOutcome + "_"
+	std::string newName = mapName + "_" + mapHashVal + "_" + std::to_string(mapPlayerLimit) + "_" + firstPlayerTribe + "_" + firstPlayerStartingPointX + "_" + firstPlayerStartingPointY + "_" + firstPlayerOutcome + "_"
 		+ secondPlayerTribe + "_" + secondPlayerStartingPointX + "_" + secondPlayerStartingPointY + "_" + secondPlayerOutcome + "_" + std::to_string(gameFrameCount) + "_" + fileOwner + ".csv";
+	std::string newFileName = logfilePath + newName;
 
 	const char* newLogfileName = newFileName.c_str();
 	const char* oldLogfileName = LogFileFullPath.c_str();
@@ -126,7 +129,19 @@ void LoggingManager::onEnd(bool isWinner)
 	replayDat << "[EndGame]\n";
 	replayDat.flush();
 	replayDat.close();
-
+	//이미 parsing된 파일이 있으면 지우고 다시 생성
+	boolean isSamePaserData = true;
+	_finddata_t fpd;
+	long dataHandle;
+	int resultHandle;
+	string paserDIRpath = logfilePath + "*.*";
+	dataHandle = _findfirst(paserDIRpath.c_str(), &fpd);
+	while (resultHandle != -1){
+		string str = fpd.name;
+		if (str == newName) isSamePaserData = false;
+		resultHandle = _findnext(dataHandle, &fpd);
+	}
+	if (isSamePaserData) remove(newLogfileName);
 	renameResult = rename(oldLogfileName, newLogfileName);
 	if (isValidation || renameResult != 0)
 	{
@@ -153,7 +168,6 @@ void LoggingManager::onEnd(bool isWinner)
 	}
 }
 
-
 void LoggingManager::makeMapData(string mapHashVal)
 {
 	mapInfoFileName = mapHashVal;
@@ -174,9 +188,7 @@ void LoggingManager::makeMapData(string mapHashVal)
 	// 맵 정보 생성 파일 첫번째 줄 : [Start]
 	mapDat << "[Start]\n";
 	mapDat << "지나갈 수 있는 곳은 1 아닌 곳은 0\n";
-	mapDat << "mapWidthWalkRes : " + mapWidthWalkRes;
-	mapDat << "mapHeightWalkRes : " + mapHeightWalkRes;
-	mapDat << "\n";
+	mapDat << "mapWidthWalkRes : " << mapWidthWalkRes << ", " << "mapHeightWalkRes : " << mapHeightWalkRes << "\n";
 	for (int i = 0; i < mapHeightWalkRes; i++){
 		for (int j = 0; j < mapWidthWalkRes; j++){
 			BWAPI::WalkPosition walkPosition;
@@ -197,22 +209,30 @@ void LoggingManager::makeMapData(string mapHashVal)
 	///     - 3: High ground doodad
 	///     - 4: Very high ground
 	///     - 5: Very high ground doodad
-	mapDat << "높이에 따라 숫자(0: Low ground, 5: Very high ground doodad\n";
-	mapDat << "mapWidthWalkRes : " + mapWidthWalkRes;
-	mapDat << "mapHeightWalkRes : " + mapHeightWalkRes;
-	mapDat << "\n";
+	mapDat << "높이에 따라 숫자(0: Low ground, 1: Low ground doodad, 2: High ground, 3: High ground doodad, 4: Very high ground, 5: Very high ground doodad\n";
+	mapDat << "mapWidthWalkRes : " << mapWidthWalkRes << ", " << "mapHeightWalkRes : " << mapHeightWalkRes << "\n";
 	for (int i = 0; i < mapHeightWalkRes; i++){
 		for (int j = 0; j < mapWidthWalkRes; j++){
 			BWAPI::TilePosition tilePosition;
-			tilePosition.x = j % 4;
-			tilePosition.y = i % 4;
+			tilePosition.x = j / 4;
+			tilePosition.y = i / 4;
 			int info = BWAPI::Broodwar->getGroundHeight(tilePosition);
 			if (j != 0) mapDat << " ";
 			mapDat << info;
 		}
 		mapDat << "\n";
 	}
-
+	//map 미네랄 정보
+	mapDat << "미네랄 : 1 가스 : 2 중립 건물 : 3 \n";
+	mapDat << "mapWidthWalkRes : " << mapWidthWalkRes << ", " << "mapHeightWalkRes : " << mapHeightWalkRes << '\n';
+	for (int i = 0; i < mapHeightWalkRes; i++){
+		for (int j = 0; j < mapWidthWalkRes; j++){
+			int info = mireralInfoWalkArray[j][i];
+			if (j != 0) mapDat << " ";
+			mapDat << info;
+		}
+		mapDat << "\n";
+	}
 	// 맵 정보 생성 파일 마지막 줄 : [End]
 	mapDat << "[End]\n";
 	mapDat.flush();
@@ -221,9 +241,13 @@ void LoggingManager::makeMapData(string mapHashVal)
 
 void LoggingManager::update()
 {
+	//getMineralInfo();
+
 	saveSupplyLog();
 
 	saveUnitsLog();
+
+	saveGameResult();
 }
 
 void LoggingManager::onUnitCreate(BWAPI::Unit unit)
@@ -238,11 +262,11 @@ void LoggingManager::onUnitMorph(BWAPI::Unit unit)
 
 void LoggingManager::saveSupplyLog()
 {
-	// 100 프레임 (5초) 마다 1번씩 로그를 기록합니다
-	if (BWAPI::Broodwar->getFrameCount() % 100 != 0) {
+	// 10 프레임 (0.5초) 마다 1번씩 로그를 기록합니다
+	if (BWAPI::Broodwar->getFrameCount() % 10 != 0) {
 		return;
 	}
-
+	replayDat << "ID, FrameCount, supplyUsed, supplyTotal" << '\n';
 	for (const auto& p : InformationManager::Instance().activePlayers) {
 		replayDat << p->getID() 
 			<< ", " << BWAPI::Broodwar->getFrameCount() 
@@ -254,8 +278,8 @@ void LoggingManager::saveSupplyLog()
 
 void LoggingManager::saveUnitsLog()
 {
-	// 100 프레임 (5초) 마다 1번씩 로그를 기록합니다
-	if (BWAPI::Broodwar->getFrameCount() % 100 != 0) {
+	// 10 프레임 (0.5초) 마다 1번씩 로그를 기록합니다
+	if (BWAPI::Broodwar->getFrameCount() % 10 != 0) {
 		return;
 	}
 	int CompletedUnitSize = 0;
@@ -266,32 +290,42 @@ void LoggingManager::saveUnitsLog()
 		}
 	}
 	replayDat << "start-activeList" << '\n';
+	replayDat << "Frame Count : " << BWAPI::Broodwar->getFrameCount() << '\n';
 	replayDat << "size : " << CompletedUnitSize << '\n';
-	replayDat << "getID, getFrameCount, getName, getID, getHitPoints, getPosition.x, getPosition.y, isAttacking, isUnderAttack, exists, getAcidSporeCount, getAirWeaponCooldown, getAngle, getBottom, getCarrier, getDefenseMatrixPoints, getDefenseMatrixTimer, getEnergy, getEnsnareTimer, getGroundWeaponCooldown, getHitPoints, getID, getInitialHitPoints, getInitialPosition.x, getInitialPosition.y, getInitialResources, getInitialTilePosition.x, getInitialTilePosition.y, getInterceptorCount, getIrradiateTimer, getKillCount, getLastCommandFrame, getLeft, getLockdownTimer, getMaelstromTimer, getOrderTargetPosition.x, getOrderTargetPosition.y, getOrderTimer, getPlagueTimer, getRallyPosition.x, getRallyPosition.y, getRemainingBuildTime, getRemainingResearchTime, getRemainingTrainTime, getRemainingUpgradeTime, getRemoveTimer, getReplayID, getResourceGroup, getResources, getRight, getScarabCount, getShields, getSpaceRemaining, getSpellCooldown, getSpiderMineCount, getStasisTimer, getStimTimer, getTargetPosition.x, getTargetPosition.y, getTilePosition.x, getTilePosition.y, getTop, getVelocityX, getVelocityY, hasNuke, isAccelerating, isAttackFrame, isAttacking, isBeingConstructed, isBeingGathered, isBeingHealed, isBlind, isBraking, isBurrowed, isCarryingGas, isCarryingMinerals, isCloaked, isCompleted, isConstructing, isDefenseMatrixed, isDetected, isEnsnared, isFlying, isFollowing, isGatheringGas, isGatheringMinerals, isHallucination, isHoldingPosition, isIdle, isInterruptible, isInvincible, isIrradiated, isLifted, isLoaded, isLockedDown, isMaelstrommed, isMorphing, isMoving, isParasited, isPatrolling, isPlagued, isPowered, isRepairing, isResearching, isSelected, isSieged, isStartingAttack, isStasised, isStimmed, isStuck, isTargetable, isTraining, isUnderAttack, isUnderDarkSwarm, isUnderDisruptionWeb, isUnderStorm, isUpgrading,burrow, unburrow, cloak, decloak, siege, unsiege, lift, haltConstruction, cancelConstruction, cancelAddon, cancelMorph, cancelResearch, cancelUpgrade, canCommand " << '\n';
-	BWAPI::Player p1;
-	BWAPI::Player p2;
-	if (gameFrameCount < BWAPI::Broodwar->getFrameCount()){
-		gameFrameCount = BWAPI::Broodwar->getFrameCount();
-	}
+	replayDat << "getID()player아이디, getFrameCount(), getType().getName(), getID() 유닛ID, getHitPoints(), getPosition().x, getPosition().y, isAttacking(), isUnderAttack(), exists(), getAcidSporeCount(), getAddon() // Unit type, getAirWeaponCooldown(), getAngle(), getBottom(), getBuildType() // Unit type, getBuildUnit() // Unit, getCarrier(), getDefenseMatrixPoints(), getDefenseMatrixTimer(), getEnergy(), getEnsnareTimer(), getGroundWeaponCooldown(), getHatchery() // Unit, getHitPoints(), getID(), getInitialHitPoints(), getInitialPosition().x, getInitialPosition().y, getInitialResources(), getInitialTilePosition().x, getInitialTilePosition().y, getInitialType() // Unit type, getInterceptorCount(), getIrradiateTimer(), getKillCount(), getLastAttackingPlayer() //BWAPI::Player, getLastCommandFrame(), getLeft(), getLockdownTimer(), getMaelstromTimer(), getNydusExit() //Unit, getOrder() //Order, getOrderTarget() // Unit, getOrderTargetPosition().x, getOrderTargetPosition().y, getOrderTimer(), getPlagueTimer(), getPlayer() // Player, getPowerUp() //Unit, getRallyPosition().x, getRallyPosition().y, getRallyUnit() //Unit, getRegion() //BWAPI::region, getRemainingBuildTime(), getRemainingResearchTime(), getRemainingTrainTime(), getRemainingUpgradeTime(), getRemoveTimer(), getReplayID(), getResourceGroup(), getResources(), getRight(), getScarabCount(), getSecondaryOrder() //Order, getShields(), getSpaceRemaining(), getSpellCooldown(), getSpiderMineCount(), getStasisTimer(), getStimTimer(), getTarget() //Unit, getTargetPosition().x, getTargetPosition().y, getTech() //TechType, getTilePosition().x, getTilePosition().y, getTop(), getTransport() //Unit, getType() //UnitType, getUpgrade() //UpgradeType, getVelocityX(), getVelocityY(), hasNuke(), hasPath(targetUnit), isAccelerating(), isAttackFrame(), isAttacking(), isBeingConstructed(), isBeingGathered(), isBeingHealed(), isBlind(), isBraking(), isBurrowed(), isCarryingGas(), isCarryingMinerals(), isCloaked(), isCompleted(), isConstructing(), isDefenseMatrixed(), isDetected(), isEnsnared(), isFlying(), isFollowing(), isGatheringGas(), isGatheringMinerals(), isHallucination(), isHoldingPosition(), isIdle(), isInterruptible(), isInvincible(), isInWeaponRange(targetUnit), isIrradiated(), isLifted(), isLoaded(), isLockedDown(), isMaelstrommed(), isMorphing(), isMoving(), isParasited(), isPatrolling(), isPlagued(), isPowered(), isRepairing(), isResearching(), isSelected(), isSieged(), isStartingAttack(), isStasised(), isStimmed(), isStuck(), isTargetable(), isTraining(), isUnderAttack(), isUnderDarkSwarm(), isUnderDisruptionWeb(), isUnderStorm(), isUpgrading(), isVisible() // is visible in enemy player, buildAddon(unitType), morph(unitType), research(techType), upgrade(upgradeType), setRallyPoint(targetUnit), burrow(), unburrow(), cloak(), decloak(), siege(), unsiege(), lift(), unload(targetUnit), haltConstruction(), cancelConstruction(), cancelAddon(), cancelMorph(), cancelResearch(), cancelUpgrade(), useTech(techType, targetPosition), canCommand()" << '\n';
+	BWAPI::Player p1 = nullptr;
+	BWAPI::Player p2 = nullptr;
+	if (gameFrameCount < BWAPI::Broodwar->getFrameCount()) gameFrameCount = BWAPI::Broodwar->getFrameCount(); //게임의 총 프레임 카운트를 저장한다.
 	for (const auto& p : InformationManager::Instance().activePlayers){
-		if (p1 == nullptr) p1 = p;
-		else p2 = p;
+		for (auto & unit : p->getUnits()){
+			if (unit != nullptr && unit->isCompleted())
+			{
+				if (p1 == nullptr && p->getID() == 0) p1 = unit->getPlayer();
+				else if (p1 != nullptr && p2 == nullptr && p->getID() == 1) p2 = unit->getPlayer();
+				else if (p1 != nullptr && p2 != nullptr) break;
+			}
+		}
 	}
+	int isAttackingSum = 0;
+	int isUnderAttackSum = 0;
+	BWAPI::Player enemyPlayer;
 	for (const auto& p : InformationManager::Instance().activePlayers) {
-		BWAPI::Player activePlayer = p;
-		BWAPI::Player enemyPlayer;
-
-		if (p2 == p) enemyPlayer = p1;
-		else enemyPlayer = p2;
-
+		
 		for (auto & unit : p->getUnits())
 		{
+			if (unit->getPlayer() == p2){
+				enemyPlayer = p1;
+			}
+			else{
+				enemyPlayer = p2;
+			}
 			BWAPI::Unit targetUnit = unit->getTarget();
 			BWAPI::Position targetPosition = unit->getTargetPosition();
-			//BWAPI::TilePosition targetTilePosition = targetUnit->getTilePosition();
 			BWAPI::UnitType unitType = unit->getType();
 			BWAPI::TechType techType = unit->getTech();
 			BWAPI::UpgradeType upgradeType = unit->getUpgrade();
+			if (unit->isAttacking()) isAttackingSum++;
+			if (unit->isUnderAttack()) isUnderAttackSum++;
 			if (unit != nullptr && unit->isCompleted())
 			{
 				replayDat << p->getID()
@@ -443,9 +477,7 @@ void LoggingManager::saveUnitsLog()
 					<< ", " << unit->isUnderDisruptionWeb()
 					<< ", " << unit->isUnderStorm()
 					<< ", " << unit->isUpgrading()
-
-					//<< ", " << unit->isVisible(activePlayer) // is visible in active player
-					//<< ", " << unit->isVisible(enemyPlayer) // is visible in enemy player
+					<< ", " << unit->isVisible(enemyPlayer) // is visible in enemy player
 					//Unit Commands
 					//<< ", " << unit->issueCommand(UnitCommand command) = 0
 					//<< ", " << unit->attack(Position target, bool shiftQueueCommand = false)
@@ -597,9 +629,37 @@ void LoggingManager::saveUnitsLog()
 			}
 		}
 	}
+	replayDat << "Sum(isAtacking) : " << isAttackingSum << '\n';
+	replayDat << "Sum(isUnderAttack) : " << isUnderAttackSum << '\n';
 	replayDat << "end-activeList" << '\n';
 }
 
+void LoggingManager::onMineralCheck(BWAPI::Unit unit){
+	if (BWAPI::Broodwar->getFrameCount() < 10){
+		//미네랄이면 1 가스면 2 중립 건물이면 3
+		if (unit->getType().getName() == "Resource_Mineral_Field" || unit->getType().getName() == "Resource_Mineral_Field_Type_2" || unit->getType().getName() == "Resource_Mineral_Field_Type_3"){
+			mireralInfoArray[unit->getPosition().x][unit->getPosition().y] = 1;
+			mireralInfoWalkArray[unit->getPosition().x/8][unit->getPosition().y/8] = 1;
+			mireralInfoTileArray[unit->getPosition().x/32][unit->getPosition().y/32] = 1;
+		}
+		else if (unit->getType().getName() == "Resource_Vespene_Geyser"){
+			mireralInfoArray[unit->getPosition().x][unit->getPosition().y] = 2;
+			mireralInfoWalkArray[unit->getPosition().x / 8][unit->getPosition().y / 8] = 2;
+			mireralInfoTileArray[unit->getPosition().x / 32][unit->getPosition().y / 32] = 2;
+		}
+		else if (unit->getType().getName() == "Special_Crashed_Norad_II" || unit->getType().getName() == "Special_Ion_Cannon"
+			|| unit->getType().getName() == "Special_Power_Generator" || unit->getType().getName() == "Special_Psi_Disrupter"
+			|| unit->getType().getName() == "Special_Cerebrate" || unit->getType().getName() == "Special_Cerebrate_Daggoth"
+			|| unit->getType().getName() == "Special_Mature_Chrysalis" || unit->getType().getName() == "Special_Overmind"
+			|| unit->getType().getName() == "Special_Overmind_Cocoon" || unit->getType().getName() == "Special_Overmind_With_Shell"
+			|| unit->getType().getName() == "Special_Khaydarin_Crystal_Form" || unit->getType().getName() == "Special_Protoss_Temple"
+			|| unit->getType().getName() == "Special_Stasis_Cell_Prison" || unit->getType().getName() == "Special_Warp_Gate" || unit->getType().getName() == "Special_XelNaga_Temple"){
+			mireralInfoArray[unit->getPosition().x][unit->getPosition().y] = 3;
+			mireralInfoWalkArray[unit->getPosition().x / 8][unit->getPosition().y / 8] = 3;
+			mireralInfoTileArray[unit->getPosition().x / 32][unit->getPosition().y / 32] = 3;
+		}
+	}
+}
 void LoggingManager::saveUnitCreate(BWAPI::Unit unit)
 {
 	replayDat << unit->getPlayer()->getID()
@@ -664,6 +724,7 @@ void LoggingManager::saveGameResult()
 		// 한 명의 플레이어가 먼저 나가서, 패자가 명확하게 식별이 되는 경우 (승자도 명확하게 식별이 가능)
 		// 패자를 기록한 후, 바로 승자를 기록한다
 		bool isOnePlayerLeftGame = false;
+		
 		for (const auto& p1 : InformationManager::Instance().activePlayers) {
 
 			// isDefeated() 로는 체크가 되지 않기 때문에
@@ -681,7 +742,7 @@ void LoggingManager::saveGameResult()
 
 				loser = p1;
 				printLoserPlayer(loser);
-
+				
 				for (const auto& p2 : InformationManager::Instance().activePlayers) {
 
 					if (p2->leftGame() == false) {
@@ -701,7 +762,7 @@ void LoggingManager::saveGameResult()
 			// 마지막 프레임에서 판단 ?  마지막 근처 프레임에서 판단 ?
 			if (InformationManager::Instance().replayTotalFrameCount > 0) {
 
-				if (InformationManager::Instance().replayTotalFrameCount = BWAPI::Broodwar->getFrameCount() ) {
+				if (InformationManager::Instance().replayTotalFrameCount == BWAPI::Broodwar->getFrameCount() ) {
 					
 					BWAPI::Player p1Player = nullptr;
 					BWAPI::Player p2Player = nullptr;
@@ -722,7 +783,7 @@ void LoggingManager::saveGameResult()
 
 					bool hasFoundLoser = false;
 
-					// 패배한 플레이어를 찾는다
+					// 패배한 플레이어를 찾는다					
 					for (const auto& p1 : InformationManager::Instance().activePlayers) {
 
 						bool isDefeated = false;
@@ -807,6 +868,22 @@ void LoggingManager::saveGameResult()
 
 				}
 			}
+		}
+
+		// 첫번째 플레이어, 두번째 플레이어가 이겼는지 졌는지 전역변수에 저장 -> 파일이름 rename 에 활용
+		boolean isFirstPlyer = true;
+		for (const auto& p : InformationManager::Instance().activePlayers) {
+
+			if (p == winner) {
+				firstPlayerOutcome = "W";
+				secondPlayerOutcome = "L";
+			}
+			else if (p == loser) {
+				firstPlayerOutcome = "L";
+				secondPlayerOutcome = "W";
+			}
+
+			break;
 		}
 	}
 }

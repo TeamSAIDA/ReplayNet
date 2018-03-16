@@ -80,7 +80,7 @@ namespace MyBot
 		/// 각 플레이어의 유닛 현황을 저장합니다
 		void saveUnitsLog();
 
-
+		
 		/// 각 플레이어의 빌드 실행을 저장합니다
 		void saveUnitCreate(BWAPI::Unit unit);
 
@@ -96,5 +96,28 @@ namespace MyBot
 		/// 해당 플레이어가 승리했다고 저장합니다
 		void printWinnerPlayer(BWAPI::Player p);
 
+		///게임 중 전투에 승리할 수 있는지 판단하는 중요 변수를 저장합니다.
+		///게임의 상황을 판단하기 위해 중요한 변수를 저장
+		void printMainCreateInfo();
+		int p1CurrentVehicleWeaponsLevel;
+		int p1LastVehicleUpgradeFrameCount;
+		int p1FirstArbiterFrameCount;
+		int p1FirstCarrierFrameCount;
+		int p1FirstReaverFrameCount;
+		int p1FirstDarkTemplarFrameCount;
+		int p1FirstMutaliskFrameCount;
+		int p1FirstLurkerFrameCount;
+		int p1FirstDefilerFrameCount;
+		int p1FirstQueenFrameCount;
+		int p2CurrentVehicleWeaponsLevel;
+		int p2LastVehicleUpgradeFrameCount;
+		int p2FirstArbiterFrameCount;
+		int p2FirstCarrierFrameCount;
+		int p2FirstReaverFrameCount;
+		int p2FirstDarkTemplarFrameCount;
+		int p2FirstMutaliskFrameCount;
+		int p2FirstLurkerFrameCount;
+		int p2FirstDefilerFrameCount;
+		int p2FirstQueenFrameCount;
 	};
 }

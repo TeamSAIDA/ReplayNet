@@ -14,6 +14,26 @@ LoggingManager::LoggingManager()
 	:gameFrameCount(0)
 	, firstPlayerOutcome("D")
 	, secondPlayerOutcome("D")
+	, p1CurrentVehicleWeaponsLevel(0)
+	, p1LastVehicleUpgradeFrameCount(0)
+	, p1FirstArbiterFrameCount(0)
+	, p1FirstCarrierFrameCount(0)
+	, p1FirstReaverFrameCount(0)
+	, p1FirstDarkTemplarFrameCount(0)
+	, p1FirstMutaliskFrameCount(0)
+	, p1FirstLurkerFrameCount(0)
+	, p1FirstDefilerFrameCount(0)
+	, p1FirstQueenFrameCount(0)
+	, p2CurrentVehicleWeaponsLevel(0)
+	, p2LastVehicleUpgradeFrameCount(0)
+	, p2FirstArbiterFrameCount(0)
+	, p2FirstCarrierFrameCount(0)
+	, p2FirstReaverFrameCount(0)
+	, p2FirstDarkTemplarFrameCount(0)
+	, p2FirstMutaliskFrameCount(0)
+	, p2FirstLurkerFrameCount(0)
+	, p2FirstDefilerFrameCount(0)
+	, p2FirstQueenFrameCount(0)
 {
 }
 
@@ -242,12 +262,14 @@ void LoggingManager::makeMapData(string mapHashVal)
 void LoggingManager::update()
 {
 	//getMineralInfo();
-
+	
 	saveSupplyLog();
 
 	saveUnitsLog();
 
 	saveGameResult();
+
+	printMainCreateInfo();
 }
 
 void LoggingManager::onUnitCreate(BWAPI::Unit unit)
@@ -275,7 +297,35 @@ void LoggingManager::saveSupplyLog()
 			<< '\n';
 	}
 }
-
+void LoggingManager::printMainCreateInfo()
+{
+	// 10 프레임 (0.5초) 마다 1번씩 로그를 기록합니다
+	if (BWAPI::Broodwar->getFrameCount() % 10 != 0) {
+		return;
+	}
+	replayDat << "start-mainInfoForAnalysis" << '\n';
+	replayDat << "1번 플레이어의 탱크 공격력 업그레이드 수준, 1번 플레이어의 탱크 공격력 업그레이드가 된 시점(프레임카운트), 1번 플레이어의 첫 아비터가 출현한 시점, 1번 플레이어의 첫 케리어가 출현한 시점, 1번 플레이어의 첫 리버가 출현한 시점, 1번 플레이어의 첫 다크템플러가 출현한 시점, 1번 플레이어의 첫 뮤탈리스크가 출현한 시점, 1번 플레이어의 첫 러커가 출현한 시점, 1번 플레이어의 첫 디파일러가 출현한 시점, 2번 플레이어의 탱크 공격력 업그레이드 수준, 2번 플레이어의 탱크 공격력 업그레이드가 된 시점(프레임카운트), 2번 플레이어의 첫 아비터가 출현한 시점, 2번 플레이어의 첫 케리어가 출현한 시점, 2번 플레이어의 첫 리버가 출현한 시점, 2번 플레이어의 첫 다크템플러가 출현한 시점, 2번 플레이어의 첫 뮤탈리스크가 출현한 시점, 2번 플레이어의 첫 러커가 출현한 시점, 2번 플레이어의 첫 디파일러가 출현한 시점" << "\n";
+	replayDat << p1CurrentVehicleWeaponsLevel
+		<< ", " << p1LastVehicleUpgradeFrameCount
+		<< ", " << p1FirstArbiterFrameCount
+		<< ", " << p1FirstCarrierFrameCount
+		<< ", " << p1FirstReaverFrameCount
+		<< ", " << p1FirstDarkTemplarFrameCount
+		<< ", " << p1FirstMutaliskFrameCount
+		<< ", " << p1FirstLurkerFrameCount
+		<< ", " << p1FirstDefilerFrameCount
+		<< ", " << p2CurrentVehicleWeaponsLevel
+		<< ", " << p2LastVehicleUpgradeFrameCount
+		<< ", " << p2FirstArbiterFrameCount
+		<< ", " << p2FirstCarrierFrameCount
+		<< ", " << p2FirstReaverFrameCount
+		<< ", " << p2FirstDarkTemplarFrameCount
+		<< ", " << p2FirstMutaliskFrameCount
+		<< ", " << p2FirstLurkerFrameCount
+		<< ", " << p2FirstDefilerFrameCount
+		<< "\n";
+	replayDat << "end-mainInfoForAnalysis" << '\n';
+}
 void LoggingManager::saveUnitsLog()
 {
 	// 10 프레임 (0.5초) 마다 1번씩 로그를 기록합니다
@@ -315,9 +365,65 @@ void LoggingManager::saveUnitsLog()
 		{
 			if (unit->getPlayer() == p2){
 				enemyPlayer = p1;
+				if (p2CurrentVehicleWeaponsLevel != p->getUpgradeLevel(BWAPI::UpgradeTypes::Terran_Vehicle_Weapons)){
+					p2CurrentVehicleWeaponsLevel = p->getUpgradeLevel(BWAPI::UpgradeTypes::Terran_Vehicle_Weapons);
+					p2LastVehicleUpgradeFrameCount = BWAPI::Broodwar->getFrameCount();
+				}
+				else if (unit->getType().getName() == "Protoss_Arbiter" && p2FirstArbiterFrameCount == 0){
+					p2FirstArbiterFrameCount = BWAPI::Broodwar->getFrameCount();
+				}
+				else if (unit->getType().getName() == "Protoss_Carrier" && p2FirstCarrierFrameCount == 0){
+					p2FirstCarrierFrameCount = BWAPI::Broodwar->getFrameCount();
+				}
+				else if (unit->getType().getName() == "Protoss_Reaver" && p2FirstReaverFrameCount == 0){
+					p2FirstReaverFrameCount = BWAPI::Broodwar->getFrameCount();
+				}
+				else if (unit->getType().getName() == "Protoss_Dark_Templar" && p2FirstDarkTemplarFrameCount == 0){
+					p2FirstDarkTemplarFrameCount = BWAPI::Broodwar->getFrameCount();
+				}
+				else if (unit->getType().getName() == "Zerg_Mutalisk" && p2FirstMutaliskFrameCount == 0){
+					p2FirstMutaliskFrameCount = BWAPI::Broodwar->getFrameCount();
+				}
+				else if (unit->getType().getName() == "Zerg_Lurker" && p2FirstLurkerFrameCount == 0){
+					p2FirstLurkerFrameCount = BWAPI::Broodwar->getFrameCount();
+				}
+				else if (unit->getType().getName() == "Zerg_Defiler" && p2FirstDefilerFrameCount == 0){
+					p2FirstDefilerFrameCount = BWAPI::Broodwar->getFrameCount();
+				}
+				else if (unit->getType().getName() == "Zerg_Queen" && p2FirstQueenFrameCount == 0){
+					p2FirstQueenFrameCount = BWAPI::Broodwar->getFrameCount();
+				}
 			}
 			else{
 				enemyPlayer = p2;
+				if (p1CurrentVehicleWeaponsLevel != p->getUpgradeLevel(BWAPI::UpgradeTypes::Terran_Vehicle_Weapons)){
+					p1CurrentVehicleWeaponsLevel = p->getUpgradeLevel(BWAPI::UpgradeTypes::Terran_Vehicle_Weapons);
+					p1LastVehicleUpgradeFrameCount = BWAPI::Broodwar->getFrameCount();
+				}
+				else if (unit->getType().getName() == "Protoss_Arbiter" && p1FirstArbiterFrameCount == 0){
+					p1FirstArbiterFrameCount = BWAPI::Broodwar->getFrameCount();
+				}
+				else if (unit->getType().getName() == "Protoss_Carrier" && p1FirstCarrierFrameCount == 0){
+					p1FirstCarrierFrameCount = BWAPI::Broodwar->getFrameCount();
+				}
+				else if (unit->getType().getName() == "Protoss_Reaver" && p1FirstReaverFrameCount == 0){
+					p1FirstReaverFrameCount = BWAPI::Broodwar->getFrameCount();
+				}
+				else if (unit->getType().getName() == "Protoss_Dark_Templar" && p1FirstDarkTemplarFrameCount == 0){
+					p1FirstDarkTemplarFrameCount = BWAPI::Broodwar->getFrameCount();
+				}
+				else if (unit->getType().getName() == "Zerg_Mutalisk" && p1FirstMutaliskFrameCount == 0){
+					p1FirstMutaliskFrameCount = BWAPI::Broodwar->getFrameCount();
+				}
+				else if (unit->getType().getName() == "Zerg_Lurker" && p1FirstLurkerFrameCount == 0){
+					p1FirstLurkerFrameCount = BWAPI::Broodwar->getFrameCount();
+				}
+				else if (unit->getType().getName() == "Zerg_Defiler" && p1FirstDefilerFrameCount == 0){
+					p1FirstDefilerFrameCount = BWAPI::Broodwar->getFrameCount();
+				}
+				else if (unit->getType().getName() == "Zerg_Queen" && p1FirstQueenFrameCount == 0){
+					p1FirstQueenFrameCount = BWAPI::Broodwar->getFrameCount();
+				}
 			}
 			BWAPI::Unit targetUnit = unit->getTarget();
 			BWAPI::Position targetPosition = unit->getTargetPosition();

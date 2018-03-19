@@ -91,6 +91,9 @@
     <ClCompile Include="ReplayBotEXE\BWTA\MapData.cpp">
       <Filter>BWTA</Filter>
     </ClCompile>
+    <ClCompile Include="MapDataManager.cpp">
+      <Filter>BotSource</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="ReplayBotEXE\MyBotModule.h">
@@ -185,6 +188,9 @@
     </ClInclude>
     <ClInclude Include="ReplayBotEXE\BWTA\TileType.h">
       <Filter>BWTA</Filter>
+    </ClInclude>
+    <ClInclude Include="MapDataManager.h">
+      <Filter>BotSource</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

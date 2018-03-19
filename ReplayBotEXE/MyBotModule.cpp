@@ -211,3 +211,6 @@ void MyBotModule::onReceiveText(BWAPI::Player player, std::string text){
 	gameCommander.onReceiveText(player, text);
 }
 
+void MyBotModule::onMineralCheck(BWAPI::Unit unit){
+	gameCommander.onMineralCheck(unit);
+}

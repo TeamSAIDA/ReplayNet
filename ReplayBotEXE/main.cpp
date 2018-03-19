@@ -71,6 +71,7 @@ int main(int argc, const char* argv[])
 				break;
 			case EventType::UnitCreate:
 				myBotModule->onUnitCreate(e.getUnit());
+				myBotModule->onMineralCheck(e.getUnit());
 				break;
 			case EventType::UnitDestroy:
 				myBotModule->onUnitDestroy(e.getUnit());

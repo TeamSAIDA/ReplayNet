@@ -47,6 +47,7 @@ void LoggingManager::onStart()
 	fileOwner = "CHS";
 	LogFilename = Config::BotInfo::BotName + "_" + to_string(startTime) + ".csv";
 	logfilePath = "bwapi-data\\write\\";
+	logfilePath = "Z:\\1. 프로젝트\\2018_삼성SDS_스타크래프트\\parsing_sample_data\\";
 	LogFileFullPath = logfilePath + LogFilename;
 	if (InformationManager::Instance().activePlayers.size() != 2){
 		return;
@@ -150,7 +151,7 @@ void LoggingManager::onEnd(bool isWinner)
 	replayDat.flush();
 	replayDat.close();
 	//이미 parsing된 파일이 있으면 지우고 다시 생성
-	boolean isSamePaserData = true;
+	boolean isSamePaserData = false;
 	_finddata_t fpd;
 	long dataHandle;
 	int resultHandle;
@@ -158,7 +159,7 @@ void LoggingManager::onEnd(bool isWinner)
 	dataHandle = _findfirst(paserDIRpath.c_str(), &fpd);
 	while (resultHandle != -1){
 		string str = fpd.name;
-		if (str == newName) isSamePaserData = false;
+		if (str == newName) isSamePaserData = true;
 		resultHandle = _findnext(dataHandle, &fpd);
 	}
 	if (isSamePaserData) remove(newLogfileName);

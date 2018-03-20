@@ -519,4 +519,9 @@ BWTA::Chokepoint * InformationManager::getSecondChokePoint(BWAPI::Player player)
 	return _secondChokePoint[player];
 }
 
-
+int InformationManager::saveFirstFrameCountOfMainUnits(BWAPI::Unit unit, BWAPI::Player player){
+	int frameCount = BWAPI::Broodwar->getFrameCount();
+}
+int InformationManager::saveFirstFrameCountOfMainUnitsUpgrade(BWAPI::Unit unit, BWAPI::Player player){
+	int frameCount = BWAPI::Broodwar->getFrameCount();
+}

@@ -146,6 +146,10 @@ namespace MyBot
 		/// 해당 UnitType 이 전투 유닛인지 리턴합니다
 		bool					isCombatUnitType(BWAPI::UnitType type) const;
 
-		
+		///주요 유닛이 최초에 생산된 시점을 리턴합니다.
+		int						saveFirstFrameCountOfMainUnits(BWAPI::Unit unit, BWAPI::Player player);
+
+		///유닛의 주요 업그레이드가 완료된 시점을 리턴합니다.
+		int						saveFirstFrameCountOfMainUnitsUpgrade(BWAPI::Unit unit, BWAPI::Player player);
 	};
 }

@@ -68,6 +68,10 @@ namespace MyBot
 		/// 실제로 게임을 플레이하는 Player 들의 목록
 		BWAPI::Playerset		activePlayers;	
 		
+		///실제로 게임하는 1번 플레이어와 2번 플레이어 정보
+		BWAPI::Player			p1;
+		BWAPI::Player			p2;
+
 		/// Unit 및 BaseLocation, ChokePoint 등에 대한 정보를 업데이트합니다
 		void                    update();
 

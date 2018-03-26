@@ -102,8 +102,18 @@ InformationManager::InformationManager()
 			_secondChokePoint[player] = nullptr;
 
 		}
-	}	
-
+	}
+	// 1 번 플레이어와 2번 플레이어 정보를 저장한다.
+	for (const auto& p : InformationManager::Instance().activePlayers){
+		for (auto & unit : p->getUnits()){
+			if (unit != nullptr && unit->isCompleted())
+			{
+				if (p1 == nullptr && p->getID() == 0) p1 = unit->getPlayer();
+				else if (p1 != nullptr && p2 == nullptr && p->getID() == 1) p2 = unit->getPlayer();
+				else if (p1 != nullptr && p2 != nullptr) break;
+			}
+		}
+	}
 	updateChokePointAndExpansionLocation();
 }
 

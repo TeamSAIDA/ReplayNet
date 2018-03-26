@@ -43,10 +43,47 @@ void LoggingManager::onStart()
 	// 리플레이 로그 파일 이름 : ReplayBot_숫자.csv
 
 	long long startTime = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now().time_since_epoch()).count();
-	//데이터의 출처에 따라 hard cording
-	fileOwner = "CHS";
+	//파일 출처를 갖고 오기 위해 bwapi.ini 파일의 경로를 탐색한다.
+	bwapiIniFilePath = "C:\\StarCraft\\bwapi-data\\bwapi.ini";
+	// read File
+	ifstream openFile(bwapiIniFilePath.data());
+	if (openFile.is_open()){
+		string line;
+		while (getline(openFile, line)){
+			char str[50];
+			if (line.substr(0,19) == "map = maps/replays/"){
+				line = line.substr(0, line.size() - 6);
+				strcpy(str, line.c_str());
+				char *ptr = strtok(str, "/");
+				while (ptr != NULL){
+					replayFolderName = ptr;
+					ptr = strtok(NULL, "/");
+				}
+			}
+		}
+		openFile.close();
+	}
+	fileOwner = replayFolderName;
+	//folder 생성
+	
+	
 	LogFilename = Config::BotInfo::BotName + "_" + to_string(startTime) + ".csv";
-	logfilePath = "bwapi-data\\write\\";
+	//logfilePath = "bwapi-data\\write\\";
+	//logfilePath = "D:\\write\\최현율요청파일파싱\\";
+	//logfilePath = "\\\\192.168.0.14\\share\\replay\\" + fileOwner + "\\";
+	logfilePath = "D:\\write\\test\\";
+	/*
+	//폴더 생성?
+	char strPath[250];
+	strcpy(strPath, logfilePath.c_str());
+	_finddatai64_t c_file;
+	intptr_t hFile;
+	int result = 0; //폴더 없음
+	hFile = _findfirsti64(strPath, &c_file);
+	if (c_file.attrib & _A_SUBDIR) result = 1; //폴더 존재
+	_findclose(hFile);
+	if (result == 0) CreateDirectory(logfilePath, NULL);
+	*/
 	LogFileFullPath = logfilePath + LogFilename;
 	if (InformationManager::Instance().activePlayers.size() != 2){
 		return;
@@ -55,7 +92,6 @@ void LoggingManager::onStart()
 
 	// 리플레이 로그 파일 첫번째 줄 : [StartGame]
 	replayDat << "[StartGame]\n";
-
 	// 리플레이 로그 파일 두번째 줄 : 맵파일이름(리플레이파일이름), 맵이름, 맵 최대플레이어수, 플레이어수
 	replayDat << "MapFileName, MapName, MapPlayerLimit, activePlayers" << '\n';
 	replayDat << InformationManager::Instance().getMapFileName()
@@ -150,7 +186,7 @@ void LoggingManager::onEnd(bool isWinner)
 	replayDat.flush();
 	replayDat.close();
 	//이미 parsing된 파일이 있으면 지우고 다시 생성
-	boolean isSamePaserData = true;
+	boolean isSamePaserData = false;
 	_finddata_t fpd;
 	long dataHandle;
 	int resultHandle;
@@ -158,7 +194,7 @@ void LoggingManager::onEnd(bool isWinner)
 	dataHandle = _findfirst(paserDIRpath.c_str(), &fpd);
 	while (resultHandle != -1){
 		string str = fpd.name;
-		if (str == newName) isSamePaserData = false;
+		if (str == newName) isSamePaserData = true;
 		resultHandle = _findnext(dataHandle, &fpd);
 	}
 	if (isSamePaserData) remove(newLogfileName);
@@ -288,12 +324,22 @@ void LoggingManager::saveSupplyLog()
 	if (BWAPI::Broodwar->getFrameCount() % 10 != 0) {
 		return;
 	}
-	replayDat << "ID, FrameCount, supplyUsed, supplyTotal" << '\n';
+	replayDat << "ID, FrameCount, supplyUsed, supplyTotal, realUnitCount" << '\n';
 	for (const auto& p : InformationManager::Instance().activePlayers) {
+		// 실제 생산된 유닛의 수를 조사
+		int realUnitCount = 0;
+		for (auto & unit : p->getUnits()){
+			if (unit != nullptr && unit->isCompleted()){
+				//const std::map< BWAPI::UnitType, int >& requiredUnits = unit->getType().requiredUnits();
+				//int a = requiredUnits.size();
+				realUnitCount += unit->getType().supplyRequired();
+			}
+		}
 		replayDat << p->getID()
 			<< ", " << BWAPI::Broodwar->getFrameCount()
 			<< ", " << p->supplyUsed()
 			<< ", " << p->supplyTotal()
+			<< ", " << realUnitCount
 			<< '\n';
 	}
 }
@@ -304,8 +350,9 @@ void LoggingManager::printMainCreateInfo()
 		return;
 	}
 	replayDat << "start-mainInfoForAnalysis" << '\n';
-	replayDat << "1번 플레이어의 탱크 공격력 업그레이드 수준, 1번 플레이어의 탱크 공격력 업그레이드가 된 시점(프레임카운트), 1번 플레이어의 첫 아비터가 출현한 시점, 1번 플레이어의 첫 케리어가 출현한 시점, 1번 플레이어의 첫 리버가 출현한 시점, 1번 플레이어의 첫 다크템플러가 출현한 시점, 1번 플레이어의 첫 뮤탈리스크가 출현한 시점, 1번 플레이어의 첫 러커가 출현한 시점, 1번 플레이어의 첫 디파일러가 출현한 시점, 2번 플레이어의 탱크 공격력 업그레이드 수준, 2번 플레이어의 탱크 공격력 업그레이드가 된 시점(프레임카운트), 2번 플레이어의 첫 아비터가 출현한 시점, 2번 플레이어의 첫 케리어가 출현한 시점, 2번 플레이어의 첫 리버가 출현한 시점, 2번 플레이어의 첫 다크템플러가 출현한 시점, 2번 플레이어의 첫 뮤탈리스크가 출현한 시점, 2번 플레이어의 첫 러커가 출현한 시점, 2번 플레이어의 첫 디파일러가 출현한 시점" << "\n";
-	replayDat << p1CurrentVehicleWeaponsLevel
+	replayDat << "프레임카운트, 1번 플레이어의 탱크 공격력 업그레이드 수준, 1번 플레이어의 탱크 공격력 업그레이드가 된 시점(프레임카운트), 1번 플레이어의 첫 아비터가 출현한 시점, 1번 플레이어의 첫 케리어가 출현한 시점, 1번 플레이어의 첫 리버가 출현한 시점, 1번 플레이어의 첫 다크템플러가 출현한 시점, 1번 플레이어의 첫 뮤탈리스크가 출현한 시점, 1번 플레이어의 첫 러커가 출현한 시점, 1번 플레이어의 첫 디파일러가 출현한 시점, 2번 플레이어의 탱크 공격력 업그레이드 수준, 2번 플레이어의 탱크 공격력 업그레이드가 된 시점(프레임카운트), 2번 플레이어의 첫 아비터가 출현한 시점, 2번 플레이어의 첫 케리어가 출현한 시점, 2번 플레이어의 첫 리버가 출현한 시점, 2번 플레이어의 첫 다크템플러가 출현한 시점, 2번 플레이어의 첫 뮤탈리스크가 출현한 시점, 2번 플레이어의 첫 러커가 출현한 시점, 2번 플레이어의 첫 디파일러가 출현한 시점" << "\n";
+	replayDat << BWAPI::Broodwar->getFrameCount()
+		<< ", " << p1CurrentVehicleWeaponsLevel
 		<< ", " << p1LastVehicleUpgradeFrameCount
 		<< ", " << p1FirstArbiterFrameCount
 		<< ", " << p1FirstCarrierFrameCount
@@ -340,12 +387,11 @@ void LoggingManager::saveUnitsLog()
 		}
 	}
 	replayDat << "start-activeList" << '\n';
-	replayDat << "Frame Count : " << BWAPI::Broodwar->getFrameCount() << '\n';
-	replayDat << "size : " << CompletedUnitSize << '\n';
+	replayDat << "Frame Count" << '\n' << BWAPI::Broodwar->getFrameCount() << '\n';
+	replayDat << "size" << '\n' << CompletedUnitSize << '\n';
 	replayDat << "getID()player아이디, getFrameCount(), getType().getName(), getID() 유닛ID, getHitPoints(), getPosition().x, getPosition().y, isAttacking(), isUnderAttack(), exists(), getAcidSporeCount(), getAddon() // Unit type, getAirWeaponCooldown(), getAngle(), getBottom(), getBuildType() // Unit type, getBuildUnit() // Unit, getCarrier(), getDefenseMatrixPoints(), getDefenseMatrixTimer(), getEnergy(), getEnsnareTimer(), getGroundWeaponCooldown(), getHatchery() // Unit, getHitPoints(), getID(), getInitialHitPoints(), getInitialPosition().x, getInitialPosition().y, getInitialResources(), getInitialTilePosition().x, getInitialTilePosition().y, getInitialType() // Unit type, getInterceptorCount(), getIrradiateTimer(), getKillCount(), getLastAttackingPlayer() //BWAPI::Player, getLastCommandFrame(), getLeft(), getLockdownTimer(), getMaelstromTimer(), getNydusExit() //Unit, getOrder() //Order, getOrderTarget() // Unit, getOrderTargetPosition().x, getOrderTargetPosition().y, getOrderTimer(), getPlagueTimer(), getPlayer() // Player, getPowerUp() //Unit, getRallyPosition().x, getRallyPosition().y, getRallyUnit() //Unit, getRegion() //BWAPI::region, getRemainingBuildTime(), getRemainingResearchTime(), getRemainingTrainTime(), getRemainingUpgradeTime(), getRemoveTimer(), getReplayID(), getResourceGroup(), getResources(), getRight(), getScarabCount(), getSecondaryOrder() //Order, getShields(), getSpaceRemaining(), getSpellCooldown(), getSpiderMineCount(), getStasisTimer(), getStimTimer(), getTarget() //Unit, getTargetPosition().x, getTargetPosition().y, getTech() //TechType, getTilePosition().x, getTilePosition().y, getTop(), getTransport() //Unit, getType() //UnitType, getUpgrade() //UpgradeType, getVelocityX(), getVelocityY(), hasNuke(), hasPath(targetUnit), isAccelerating(), isAttackFrame(), isAttacking(), isBeingConstructed(), isBeingGathered(), isBeingHealed(), isBlind(), isBraking(), isBurrowed(), isCarryingGas(), isCarryingMinerals(), isCloaked(), isCompleted(), isConstructing(), isDefenseMatrixed(), isDetected(), isEnsnared(), isFlying(), isFollowing(), isGatheringGas(), isGatheringMinerals(), isHallucination(), isHoldingPosition(), isIdle(), isInterruptible(), isInvincible(), isInWeaponRange(targetUnit), isIrradiated(), isLifted(), isLoaded(), isLockedDown(), isMaelstrommed(), isMorphing(), isMoving(), isParasited(), isPatrolling(), isPlagued(), isPowered(), isRepairing(), isResearching(), isSelected(), isSieged(), isStartingAttack(), isStasised(), isStimmed(), isStuck(), isTargetable(), isTraining(), isUnderAttack(), isUnderDarkSwarm(), isUnderDisruptionWeb(), isUnderStorm(), isUpgrading(), isVisible() // is visible in enemy player, buildAddon(unitType), morph(unitType), research(techType), upgrade(upgradeType), setRallyPoint(targetUnit), burrow(), unburrow(), cloak(), decloak(), siege(), unsiege(), lift(), unload(targetUnit), haltConstruction(), cancelConstruction(), cancelAddon(), cancelMorph(), cancelResearch(), cancelUpgrade(), useTech(techType, targetPosition), canCommand()" << '\n';
-	BWAPI::Player p1 = nullptr;
-	BWAPI::Player p2 = nullptr;
 	if (gameFrameCount < BWAPI::Broodwar->getFrameCount()) gameFrameCount = BWAPI::Broodwar->getFrameCount(); //게임의 총 프레임 카운트를 저장한다.
+	/* 플레이어 1과 2를 저장하는 로직은 InformationManager로 이동
 	for (const auto& p : InformationManager::Instance().activePlayers){
 		for (auto & unit : p->getUnits()){
 			if (unit != nullptr && unit->isCompleted())
@@ -355,7 +401,7 @@ void LoggingManager::saveUnitsLog()
 				else if (p1 != nullptr && p2 != nullptr) break;
 			}
 		}
-	}
+	}*/
 	int isAttackingSum = 0;
 	int isUnderAttackSum = 0;
 	BWAPI::Player enemyPlayer;
@@ -363,8 +409,8 @@ void LoggingManager::saveUnitsLog()
 
 		for (auto & unit : p->getUnits())
 		{
-			if (unit->getPlayer() == p2){
-				enemyPlayer = p1;
+			if (unit->getPlayer() == InformationManager::Instance().p2){
+				enemyPlayer = InformationManager::Instance().p1;
 				if (p2CurrentVehicleWeaponsLevel != p->getUpgradeLevel(BWAPI::UpgradeTypes::Terran_Vehicle_Weapons)){
 					p2CurrentVehicleWeaponsLevel = p->getUpgradeLevel(BWAPI::UpgradeTypes::Terran_Vehicle_Weapons);
 					p2LastVehicleUpgradeFrameCount = BWAPI::Broodwar->getFrameCount();
@@ -395,7 +441,7 @@ void LoggingManager::saveUnitsLog()
 				}
 			}
 			else{
-				enemyPlayer = p2;
+				enemyPlayer = InformationManager::Instance().p2;
 				if (p1CurrentVehicleWeaponsLevel != p->getUpgradeLevel(BWAPI::UpgradeTypes::Terran_Vehicle_Weapons)){
 					p1CurrentVehicleWeaponsLevel = p->getUpgradeLevel(BWAPI::UpgradeTypes::Terran_Vehicle_Weapons);
 					p1LastVehicleUpgradeFrameCount = BWAPI::Broodwar->getFrameCount();

@@ -8,7 +8,7 @@ namespace MyBot
 	/// 게임 상황정보 중 일부를 자체 자료구조 및 변수들에 저장하고 업데이트하는 class<br>
 	/// 현재 게임 상황정보는 BWAPI::Broodwar 를 조회하여 파악할 수 있지만, 과거 게임 상황정보는 BWAPI::Broodwar 를 통해 조회가 불가능하기 때문에 InformationManager에서 별도 관리하도록 합니다<br>
 	/// 또한, BWAPI::Broodwar 나 BWTA 등을 통해 조회할 수 있는 정보이지만 전처리 / 별도 관리하는 것이 유용한 것도 InformationManager에서 별도 관리하도록 합니다
-	class InformationManager 
+	class InformationManager
 	{
 		InformationManager();
 
@@ -45,7 +45,7 @@ namespace MyBot
 		/// 해당 Player의 mainBaseLocation 에서 두번째로 가까운 (firstChokePoint가 아닌) ChokePoint<br>
 		/// 게임 맵에 따라서, secondChokePoint 는 일반 상식과 다른 지점이 될 수도 있습니다
 		std::map<BWAPI::Player, BWTA::Chokepoint *>					_secondChokePoint;
-	
+
 		/// 전체 unit 의 정보를 업데이트 합니다 (UnitType, lastPosition, HitPoint 등)
 		void                    updateUnitsInfo();
 
@@ -66,15 +66,19 @@ namespace MyBot
 		int															replayTotalFrameCount;
 
 		/// 실제로 게임을 플레이하는 Player 들의 목록
-		BWAPI::Playerset		activePlayers;	
-		
+		BWAPI::Playerset		activePlayers;
+
+		///실제로 게임하는 1번 플레이어와 2번 플레이어 정보
+		BWAPI::Player			p1;
+		BWAPI::Player			p2;
+
 		/// Unit 및 BaseLocation, ChokePoint 등에 대한 정보를 업데이트합니다
 		void                    update();
 
 		/// Unit 에 대한 정보를 업데이트합니다
-//		void					onUnitShow(BWAPI::Unit unit)        { updateUnitHide(unit, false); }
+		//		void					onUnitShow(BWAPI::Unit unit)        { updateUnitHide(unit, false); }
 		/// Unit 에 대한 정보를 업데이트합니다
-//		void					onUnitHide(BWAPI::Unit unit)        { updateUnitHide(unit, true); }
+		//		void					onUnitHide(BWAPI::Unit unit)        { updateUnitHide(unit, true); }
 		/// Unit 에 대한 정보를 업데이트합니다
 		void					onUnitCreate(BWAPI::Unit unit);
 		/// Unit 에 대한 정보를 업데이트합니다
@@ -85,7 +89,7 @@ namespace MyBot
 
 		/// 현재 맵의 최대 플레이어수 (2인용 맵, 3인용 맵, 4인용 맵, 8인용 맵) 을 리턴합니다
 		int						getMapPlayerLimit() { return mapPlayerLimit; }
-		
+
 		/// 현재 맵의 파일이름을 리턴합니다
 		std::string				getMapFileName()		{ return mapFileName; }
 
@@ -98,15 +102,15 @@ namespace MyBot
 
 		/// 해당 Player (아군 or 적군) 의 모든 유닛 통계 UnitData 을 리턴합니다		 
 		UnitData &				getUnitData(BWAPI::Player player) { return _unitData[player]; }
-		
+
 		/// 해당 BaseLocation 에 player의 건물이 존재하는지 리턴합니다
 		/// @param baseLocation 대상 BaseLocation
 		/// @param player 아군 / 적군
 		/// @param radius TilePosition 단위
 		bool					hasBuildingAroundBaseLocation(BWTA::BaseLocation * baseLocation, BWAPI::Player player, int radius = 10);
-		
+
 		/// 해당 Region 에 해당 Player의 건물이 존재하는지 리턴합니다
-		bool					existsPlayerBuildingInRegion(BWTA::Region * region, BWAPI::Player player);		
+		bool					existsPlayerBuildingInRegion(BWTA::Region * region, BWAPI::Player player);
 
 		/// 해당 Player (아군 or 적군) 가 건물을 건설해서 점령한 Region 목록을 리턴합니다
 		std::set<BWTA::Region *> &  getOccupiedRegions(BWAPI::Player player);
@@ -134,11 +138,11 @@ namespace MyBot
 
 		/// 해당 Player (아군 or 적군) 의 모든 유닛 목록 (가장 최근값) UnitAndUnitInfoMap 을 리턴합니다<br> 
 		/// 파악된 정보만을 리턴하기 때문에 적군의 정보는 틀린 값일 수 있습니다
-//		UnitAndUnitInfoMap &    getUnitAndUnitInfoMap(BWAPI::Player player);
+		//		UnitAndUnitInfoMap &    getUnitAndUnitInfoMap(BWAPI::Player player);
 
 		// BasicBot 1.1 Patch End //////////////////////////////////////////////////
 
-		
+
 
 		/// 해당 Player (아군 or 적군) 의 position 주위의 유닛 목록을 unitInfo 에 저장합니다		 
 		void                    getNearbyForce(std::vector<UnitInfo*> & unitInfo, BWAPI::Position p, BWAPI::Player player, int radius);
@@ -146,6 +150,6 @@ namespace MyBot
 		/// 해당 UnitType 이 전투 유닛인지 리턴합니다
 		bool					isCombatUnitType(BWAPI::UnitType type) const;
 
-		
+
 	};
 }

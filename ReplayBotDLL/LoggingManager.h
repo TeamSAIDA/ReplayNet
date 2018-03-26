@@ -50,6 +50,10 @@ namespace MyBot
 
 	private:
 
+		//static BWAPI::Player p1; //1번 플레이어 아이디
+		//static BWAPI::Player p2; //2번 플레이어 아이디
+		std::string bwapiIniFilePath;
+		std::string replayFolderName;
 		std::string LogFilename;
 		std::string LogFileFullPath;
 		std::string logfilePath;

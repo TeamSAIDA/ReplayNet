@@ -50,6 +50,10 @@ namespace MyBot
 
 	private:
 
+		//static BWAPI::Player p1; //1번 플레이어 아이디
+		//static BWAPI::Player p2; //2번 플레이어 아이디
+		std::string bwapiIniFilePath;
+		std::string replayFolderName;
 		std::string LogFilename;
 		std::string LogFileFullPath;
 		std::string logfilePath;
@@ -80,7 +84,7 @@ namespace MyBot
 		/// 각 플레이어의 유닛 현황을 저장합니다
 		void saveUnitsLog();
 
-		
+
 		/// 각 플레이어의 빌드 실행을 저장합니다
 		void saveUnitCreate(BWAPI::Unit unit);
 

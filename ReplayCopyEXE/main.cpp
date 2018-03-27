@@ -1,74 +1,57 @@
-#include <stdio.h>
-#include <string.h>
-#include <stdlib.h>
-#include <io.h>
-#include <tchar.h>
-#include <string>
-#include <direct.h>
-#include <queue>
-#include <stack>
-#include <windows.h>
-#include <Wincrypt.h>
-#include <locale>
-#include <sstream>
-#include <fstream>
-#include <iostream>
-#include <filesystem>
-#include <locale>
-#include <codecvt>
-#include <time.h>
-#include <fcntl.h>
-#include <sys/timeb.h>
-
-using namespace std;
-
-#define _UNICODE
-
-#define BUFSIZE 1024
-#define MD5LEN  16
-
-int getMD5(std::wstring lpcTargetFilename, std::wstring &fileMD5hash);
-
-//std::wstring widen(std::string &s)
-//{
-//	std::wstring wsTmp(s.begin(), s.end());
-//	return wsTmp;
-//}
+#include "main.h"
 
 int wmain(int argc, wchar_t** argv) {
 
 	_setmode(_fileno(stdout), _O_U16TEXT);
 
-	// 리플레이 파일들을 검색할 폴더 경로
-	std::wstring startingFolder;
+	// 리플레이 파일들을 검색할 Source Folder 경로
+	std::wstring startingSourceFolderPath;
 
-	// 리플레이 파일들 및 목록 파일을 복사해넣을 목적 폴더
-	std::wstring destinationFolder;
-
-	// 현재 폴더
-	std::wstring nextFolder;
-
+	// 리플레이 파일들 및 목록 파일을 복사해넣을 Destination Folder 경로
+	std::wstring destinationFolderPath;
+	
 	//for (int i = 0; i < argc; i++) {
 	//	wprintf("%s\n", argv[i]);
 	//}
 
 	if (argc == 3) {
-		// TODO : argv[1], argv[2] 가 정상적인 폴더 경로인지 아닌지 체크한다
-		startingFolder = argv[1];
-		destinationFolder = argv[2];
+		// argv[1], argv[2] 가 정상적인 폴더 경로인지 아닌지 체크한 후 폴더 다
+		startingSourceFolderPath = argv[1];
+		destinationFolderPath = argv[2];
+
+		if (0 != _wchdir(startingSourceFolderPath.c_str())) {
+			wprintf(L"Error in source folder path : %s\n", startingSourceFolderPath.c_str());
+			return 0;
+		}
+
+		if (0 != _wchdir(destinationFolderPath.c_str())) {
+			wprintf(L"Error in destination folder path : %s\n", destinationFolderPath.c_str());
+			return 0;
+		}
+
+		wprintf(L"--- Starcraft : Broodwar Replay File Copy Program ---\n");
+		wprintf(L"    From : %s\n", startingSourceFolderPath.c_str());
+		wprintf(L"    To   : %s\n", destinationFolderPath.c_str());
 	}
 	else {
+		wprintf(L"Usage : ReplayCopyEXE \"SOURCE_FOLDER_PATH\" \"DESTINATION_FOLDER_PATH\" \n");
 		return 0;
 	}
 
 	// 파일 복사 기록을 적을 목록 파일
 	std::wofstream listFileStream;
-	std::wstring listFileFullPath = destinationFolder + L"\\list.csv";
+	std::wstring listFilePath = destinationFolderPath + L"\\list.csv";
 	listFileStream.imbue(std::locale(std::locale::empty(), new std::codecvt_utf8<wchar_t, 0x10ffff, std::generate_header>));
-	listFileStream.open(listFileFullPath.c_str(), std::ofstream::out);
+	listFileStream.open(listFilePath.c_str(), std::ofstream::out);
 
 	// 방문대상 폴더 stack -> 현재위치로부터 시작해서 Depth First Search 방식으로 방문한다
 	std::stack<std::wstring> folders;
+
+	// 현재 폴더 경로
+	std::wstring currentWorkingFolder;
+
+	// Source File 의 경로 + 파일명
+	wchar_t sourceFileFullPath[_MAX_PATH];
 
 	// 파일 찾기 핸들
 	long handle;
@@ -76,30 +59,31 @@ int wmain(int argc, wchar_t** argv) {
 	// 파일 정보 구조체
 	struct _wfinddata_t fileInfo;   
 
-	std::wstring fileMD5hash;
+	// Source File 의 MD5 Hash 값
+	std::wstring sourceFileMD5HashString;
 
 	// 260자 넘는 패스 다루기
-	wchar_t* _startingFolder = _wgetcwd(NULL, 0);
-	startingFolder = _startingFolder;
-	free(_startingFolder);
+	//wchar_t* _startingFolder = _wgetcwd(NULL, 0);
+	//startingSourceFolderPath = _startingFolder;
+	//free(_startingFolder);
 
-	// 방문 대상 폴더 stack 에 현재 폴더를 추가한다
-	folders.push(startingFolder);
-	wprintf(L"Copy all replay files from %s\n", startingFolder.c_str());
-	
-	wchar_t fromFileFullPath[_MAX_PATH];
+	// 방문 대상 폴더 stack 에 Source 폴더를 추가한다
+	folders.push(startingSourceFolderPath);
 
-	// stack 의 제일 위에 있는 폴더 경로로 이동한다
 	while (folders.empty() == false) {
-		std::wstring nextFolder = folders.top();
-		folders.pop();
 
-		_wchdir(nextFolder.c_str());
-		
-		wprintf(L"\nCurrent Visiting Folder : %s\n", nextFolder);
+		// stack 의 제일 위에 있는 폴더 경로를 갖고와서 거기로 이동한 후 
+		currentWorkingFolder = folders.top();
+		folders.pop();
+		if (0 != _wchdir(currentWorkingFolder.c_str())) {
+			wprintf(L"Error in source folder path : %s\n", currentWorkingFolder.c_str());
+			break;
+		}
+
+		wprintf(L"\nCurrent Visiting Folder : %s\n", currentWorkingFolder.c_str());
 		
 		// 현재 폴더의 파일 및 하위폴더 목록을 모두 얻어온다
-		handle = _wfindfirst(wstring(nextFolder + L"\\*").c_str(), &fileInfo);
+		handle = _wfindfirst(wstring(currentWorkingFolder + L"\\*").c_str(), &fileInfo);
 		if (-1 == handle) {
 			// No file in directory 
 		}
@@ -110,45 +94,56 @@ int wmain(int argc, wchar_t** argv) {
 				{
 					if (wcscmp(fileInfo.name, L".") != 0 && wcscmp(fileInfo.name, L"..") != 0) {
 
-						if (_wfullpath(fromFileFullPath, fileInfo.name, _MAX_PATH) != NULL) {
-							wprintf(L"Add folder to visit : %s\n", fromFileFullPath);
-							folders.push(fromFileFullPath);
+						if (_wfullpath(sourceFileFullPath, fileInfo.name, _MAX_PATH) != NULL) {
+							wprintf(L"Add folder to visit : %s\n", sourceFileFullPath);
+							folders.push(sourceFileFullPath);
 						}
 					}
 				}
 				// 하위 폴더가 아니면 파일 복사를 하고, 파일 목록에 추가한다
 				else
 				{
-					if (_wfullpath(fromFileFullPath, fileInfo.name, _MAX_PATH) != NULL) {
+					if (_wfullpath(sourceFileFullPath, fileInfo.name, _MAX_PATH) != NULL) {
 
 						if (NULL == wcsstr(fileInfo.name, L".rep")) {
 							continue;
 						}
 
 						// 신규 파일 이름 : 타임스탬프
-						time_t ltime;
-						time(&ltime);
+						time_t currentTime;
+						time(&currentTime);
 						struct _timeb timebuffer;
 						_ftime64_s(&timebuffer);
-						std::wstring newFileName = to_wstring(ltime) + to_wstring(timebuffer.millitm);
+						std::wstring newFileName = to_wstring(currentTime) + to_wstring(timebuffer.millitm);
 
 						// 파일의 md5 해시값 계산하기 : https://msdn.microsoft.com/en-us/library/windows/desktop/aa382380(v=vs.85).aspx
-						getMD5(fileInfo.name, fileMD5hash);
+						sourceFileMD5HashString = L"";
+						getMD5(fileInfo.name, sourceFileMD5HashString);
 						
 						wprintf(L"\n");
-						wprintf(L"File Name : %s\n", fromFileFullPath);
-						wprintf(L"MD5 Hash : %s\n", fileMD5hash.c_str());
+						wprintf(L"File Name : %s\n", sourceFileFullPath);
+						wprintf(L"MD5 Hash : %s\n", sourceFileMD5HashString.c_str());
 						
-						if (fileMD5hash.size() > 0) {
+						if (sourceFileMD5HashString.size() > 0) {
 							
-							// 파일을 복사 한다
+							// Destination File 이름
 							std::wstring destinationFileName = newFileName + L".rep";
-							std::wstring destinationFileFullPath = destinationFolder + L"\\" + destinationFileName;
-							wprintf(L"Copy to : %s\n", destinationFileFullPath.c_str());
+							// Destination File 전체경로 + 파일이름
+							std::wstring destinationFileFullPath = destinationFolderPath + L"\\" + destinationFileName;
+
+							// 파일을 복사한다.  기존에 동일한 파일이 있다면, 덮어쓰지않고 Fail 로 기록한다							
+							wprintf(L"Copy to : %s\n", destinationFileFullPath.c_str());							
+							BOOL copyResult = CopyFile(wstring(sourceFileFullPath).c_str(), destinationFileFullPath.c_str(), true);
+							std::wstring copyResultString;
+							if (copyResult != 0) {
+								copyResultString = L"1";
+							}
+							else {
+								getLastErrorString(copyResultString);
+								wprintf(L"Error : %s\n", copyResultString.c_str());
+								copyResultString = L"0";
+							}
 							
-							CopyFile(wstring(fromFileFullPath).c_str(), destinationFileFullPath.c_str(), true);
-
-
 							// 파일이 수정된 날짜 및 시각 문자열을 만든다
 							struct tm fileDateTime;
 							_localtime64_s(&fileDateTime, &fileInfo.time_write);
@@ -157,19 +152,19 @@ int wmain(int argc, wchar_t** argv) {
 							swprintf_s(fileDateString, 11, L"%04d-%02d-%02d\0", (fileDateTime.tm_year + 1900), (fileDateTime.tm_mon + 1), fileDateTime.tm_mday);
 							swprintf_s(fileTimeString, 9, L"%02d:%02d:%02d\0", fileDateTime.tm_hour, fileDateTime.tm_min, fileDateTime.tm_sec);
 
-							// 파일 목록.csv 에 append 한다
-							// . 항목 : startingFolder 명, 원본 폴더 경로, 원본 파일명, 원본 파일 생성일시, destinationFolder 명, 신규 파일 이름, 파일 크기, 파일 해시
-							// . 추가방법 : cout 으로 바로바로. flush
-							listFileStream << startingFolder.c_str()
-								<< "," << nextFolder.c_str()
+							// 파일 목록.csv 에 append 하고, 바로 flush 한다
+							// 항목 : startingSourceFolderPath 명, 원본 폴더 경로, 원본 파일명, 원본 파일 생성일시, destinationFolderPath 명, 신규 파일 이름, 파일 크기, 파일 해시, 복사결과
+							listFileStream << startingSourceFolderPath.c_str()
+								<< "," << currentWorkingFolder.c_str()
 								<< "," << fileInfo.name
 								<< "," << fileDateString
 								<< "," << fileTimeString
-								<< "," << destinationFolder.c_str()
+								<< "," << destinationFolderPath.c_str()
 								<< "," << destinationFileName.c_str()
 								<< "," << fileInfo.size
-								<< "," << fileMD5hash
-								<< L"\n";
+								<< "," << sourceFileMD5HashString.c_str()
+								<< "," << copyResultString.c_str()
+								<< L"\n";					
 							listFileStream.flush();
 						}
 
@@ -184,118 +179,5 @@ int wmain(int argc, wchar_t** argv) {
 	listFileStream.close();
 
 	return 0;
-}
-
-int getMD5(std::wstring targetFileName, std::wstring &fileMD5hash) {
-	DWORD dwStatus = 0;
-	BOOL bResult = FALSE;
-	HCRYPTPROV hProv = 0;
-	HCRYPTHASH hHash = 0;
-	HANDLE hFile = NULL;
-	BYTE rgbFile[BUFSIZE];
-	DWORD cbRead = 0;
-	BYTE rgbHash[MD5LEN];
-	DWORD cbHash = 0;
-	CHAR rgbDigits[] = "0123456789abcdef";
-	
-	wstring wideTargetFileName(targetFileName.begin(), targetFileName.end());	
-	LPCWSTR lpcTargetFilename = wideTargetFileName.c_str();	
-
-	// Logic to check usage goes here.
-
-	//wprintf(L"Get MD5 hash of file %s \n", targetFileName.c_str());
-
-	hFile = CreateFile(lpcTargetFilename,
-		GENERIC_READ,
-		FILE_SHARE_READ,
-		NULL,
-		OPEN_EXISTING,
-		FILE_FLAG_SEQUENTIAL_SCAN,
-		NULL);
-
-	if (INVALID_HANDLE_VALUE == hFile)
-	{
-		dwStatus = GetLastError();
-		wprintf(L"Error opening file %s\nError: %d\n", lpcTargetFilename, dwStatus);
-		return dwStatus;
-	}
-
-	// Get handle to the crypto provider
-	if (!CryptAcquireContext(&hProv,
-		NULL,
-		NULL,
-		PROV_RSA_FULL,
-		CRYPT_VERIFYCONTEXT))
-	{
-		dwStatus = GetLastError();
-		wprintf(L"CryptAcquireContext failed: %d\n", dwStatus);
-		CloseHandle(hFile);
-		return dwStatus;
-	}
-
-	if (!CryptCreateHash(hProv, CALG_MD5, 0, 0, &hHash))
-	{
-		dwStatus = GetLastError();
-		wprintf(L"CryptAcquireContext failed: %d\n", dwStatus);
-		CloseHandle(hFile);
-		CryptReleaseContext(hProv, 0);
-		return dwStatus;
-	}
-
-	while (bResult = ReadFile(hFile, rgbFile, BUFSIZE,
-		&cbRead, NULL))
-	{
-		if (0 == cbRead)
-		{
-			break;
-		}
-
-		if (!CryptHashData(hHash, rgbFile, cbRead, 0))
-		{
-			dwStatus = GetLastError();
-			wprintf(L"CryptHashData failed: %d\n", dwStatus);
-			CryptReleaseContext(hProv, 0);
-			CryptDestroyHash(hHash);
-			CloseHandle(hFile);
-			return dwStatus;
-		}
-	}
-
-	if (!bResult)
-	{
-		dwStatus = GetLastError();
-		wprintf(L"ReadFile failed: %d\n", dwStatus);
-		CryptReleaseContext(hProv, 0);
-		CryptDestroyHash(hHash);
-		CloseHandle(hFile);
-		return dwStatus;
-	}
-
-	cbHash = MD5LEN;
-	if (CryptGetHashParam(hHash, HP_HASHVAL, rgbHash, &cbHash, 0))
-	{
-		//wprintf("MD5 hash of file %s is : ", targetFileName.c_str());
-
-		fileMD5hash = L"";
-		for (DWORD i = 0; i < cbHash; i++)
-		{
-			//wprintf("%c%c", rgbDigits[rgbHash[i] >> 4], rgbDigits[rgbHash[i] & 0xf]);
-
-			fileMD5hash += rgbDigits[rgbHash[i] >> 4];
-			fileMD5hash += rgbDigits[rgbHash[i] & 0xf];
-		}
-		//wprintf("\n");
-	}
-	else
-	{
-		dwStatus = GetLastError();
-		wprintf(L"CryptGetHashParam failed: %d\n", dwStatus);
-	}
-
-	CryptDestroyHash(hHash);
-	CryptReleaseContext(hProv, 0);
-	CloseHandle(hFile);
-
-	return dwStatus;
 }
 

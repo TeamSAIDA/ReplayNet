@@ -7,7 +7,7 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "ReplayBotEXE", "ReplayBotEX
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "ReplayBotDLL", "ReplayBotDLL.vcxproj", "{2E63AE74-758A-4607-9DE4-D28E814A6E13}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "ReplayCopyEXE", "ReplayCopyEXE\ReplayCopyEXE.vcxproj", "{05203D57-6A12-4CC0-A414-4A63BC253478}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "ReplayCopyEXE", "ReplayCopyEXE.vcxproj", "{05203D57-6A12-4CC0-A414-4A63BC253478}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

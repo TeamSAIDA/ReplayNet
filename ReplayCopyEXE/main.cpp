@@ -44,6 +44,10 @@ int wmain(int argc, wchar_t** argv) {
 	listFileStream.imbue(std::locale(std::locale::empty(), new std::codecvt_utf8<wchar_t, 0x10ffff, std::generate_header>));
 	listFileStream.open(listFilePath.c_str(), std::ofstream::out);
 
+
+	// 파일 복사 카운트
+	int fileCopyCount = 0;
+
 	// 방문대상 폴더 stack -> 현재위치로부터 시작해서 Depth First Search 방식으로 방문한다
 	std::stack<std::wstring> folders;
 
@@ -137,6 +141,7 @@ int wmain(int argc, wchar_t** argv) {
 							std::wstring copyResultString;
 							if (copyResult != 0) {
 								copyResultString = L"1";
+								fileCopyCount ++;
 							}
 							else {
 								getLastErrorString(copyResultString);
@@ -169,8 +174,18 @@ int wmain(int argc, wchar_t** argv) {
 						}
 
 					}
+
+					// 파일 복사 갯수가 5만개를 넘어가는 경우, 로직에 문제가 있다고 보고, 멈춘다
+					if (fileCopyCount > 50000) {
+						break;
+					}
 				}
 			} while (_wfindnext(handle, &fileInfo) == 0);
+		}
+
+		// 파일 복사 갯수가 5만개를 넘어가는 경우, 로직에 문제가 있다고 보고, 멈춘다
+		if (fileCopyCount > 50000) {
+			break;
 		}
 	}
 

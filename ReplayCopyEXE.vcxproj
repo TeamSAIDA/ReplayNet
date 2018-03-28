@@ -42,10 +42,12 @@
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <LinkIncremental>true</LinkIncremental>
+    <IntDir>$(SolutionDir)\$(Configuration)\$(ProjectName)\</IntDir>
+    <OutDir>$(SolutionDir)\$(Configuration)\$(ProjectName)\</OutDir>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <LinkIncremental>false</LinkIncremental>
-    <IntDir>$(Configuration)\$(ProjectName)\</IntDir>
+    <IntDir>$(SolutionDir)\$(Configuration)\$(ProjectName)\</IntDir>
     <OutDir>C:\StarCraft\bwapi-data\</OutDir>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">

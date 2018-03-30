@@ -68,7 +68,8 @@ void GameCommander::onUnitComplete(BWAPI::Unit unit)
 
 void GameCommander::onUnitDestroy(BWAPI::Unit unit)
 {
-	//InformationManager::Instance().onUnitDestroy(unit); 
+	InformationManager::Instance().onUnitDestroy(unit); 
+	LoggingManager::Instance().countUnitDestroy(unit);
 }
 
 void GameCommander::onUnitRenegade(BWAPI::Unit unit)

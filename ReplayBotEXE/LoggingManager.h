@@ -28,6 +28,9 @@ namespace MyBot
 		/// 경기 진행 중 매 프레임마다 경기 로깅 관련 로직을 실행합니다
 		void update();
 
+		/// 각 유닛이 소멸 된 데이터를 저장합니다.
+		void countUnitDestroy(BWAPI::Unit unit);
+
 		void onUnitCreate(BWAPI::Unit unit);
 		void onUnitMorph(BWAPI::Unit unit);
 		/// 맵정보 파일에 미네랄 정보를 저장합니다.
@@ -123,5 +126,10 @@ namespace MyBot
 		int p2FirstLurkerFrameCount;
 		int p2FirstDefilerFrameCount;
 		int p2FirstQueenFrameCount;
+
+		/// 누적 파괴 유닛의 수
+		int p1CumulativeDestroyedUnitCount;
+		int p2CumulativeDestroyedUnitCount;
+
 	};
 }

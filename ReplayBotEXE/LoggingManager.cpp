@@ -34,6 +34,8 @@ LoggingManager::LoggingManager()
 	, p2FirstLurkerFrameCount(0)
 	, p2FirstDefilerFrameCount(0)
 	, p2FirstQueenFrameCount(0)
+	, p1CumulativeDestroyedUnitCount(0)
+	, p2CumulativeDestroyedUnitCount(0)
 {
 }
 
@@ -72,6 +74,7 @@ void LoggingManager::onStart()
 	//logfilePath = "D:\\write\\최현율요청파일파싱\\";
 	//logfilePath = "\\\\192.168.0.14\\share\\replay\\" + fileOwner + "\\";
 	logfilePath = "D:\\write\\test\\";
+	//logfilePath = "\\\\163.152.174.30\\Share\\1. 프로젝트\\2018_삼성SDS_스타크래프트\\조윤상님요청파싱파일\\";
 	/*
 	//폴더 생성?
 	char strPath[250];
@@ -318,28 +321,78 @@ void LoggingManager::onUnitMorph(BWAPI::Unit unit)
 	saveUnitMorph(unit);
 }
 
+void LoggingManager::countUnitDestroy(BWAPI::Unit unit)
+{
+	//replayDat << "countUnitDestroy" << "\n";
+	//replayDat << unit->getType().getName() << "\n";
+	if (unit->getPlayer() == InformationManager::Instance().p1){
+		p1CumulativeDestroyedUnitCount += unit->getType().supplyRequired();
+	}
+	else if (unit->getPlayer() == InformationManager::Instance().p2){
+		p2CumulativeDestroyedUnitCount += unit->getType().supplyRequired();
+	}
+
+
+}
 void LoggingManager::saveSupplyLog()
 {
 	// 10 프레임 (0.5초) 마다 1번씩 로그를 기록합니다
 	if (BWAPI::Broodwar->getFrameCount() % 10 != 0) {
 		return;
 	}
-	replayDat << "ID, FrameCount, supplyUsed, supplyTotal, realUnitCount" << '\n';
+
+	int KMeanXSum, KMeanYSum, UnitCount, KMeanX, KMeanY, realUnitCount, isAttackingSum, isUnderAttackSum, CumulativeDestroyedUnitCount, isCooldowningCount, isStartingAttackCount, gatheredMineral, gatheredGas;
+	replayDat << "ID, FrameCount, supplyUsed, supplyTotal, createdUnitCount, 전투유닛의 X 좌표의 평균, 전투유닛의 Y 좌표의 평균, isAttackingCount, isUnderAttackCount, isCooldowningCount, isStartingAttackCount, CumulativeDestroyedUnitCount gatheredMineral, gatheredGas" << '\n';
 	for (const auto& p : InformationManager::Instance().activePlayers) {
 		// 실제 생산된 유닛의 수를 조사
-		int realUnitCount = 0;
+		gatheredMineral = 0, gatheredGas = 0, realUnitCount = 0, isAttackingSum = 0, isUnderAttackSum = 0, isStartingAttackCount = 0, isCooldowningCount = 0, UnitCount = 0, KMeanXSum = 0, KMeanYSum = 0, KMeanX = 0, KMeanX = 0, CumulativeDestroyedUnitCount = 0;
 		for (auto & unit : p->getUnits()){
 			if (unit != nullptr && unit->isCompleted()){
-				//const std::map< BWAPI::UnitType, int >& requiredUnits = unit->getType().requiredUnits();
-				//int a = requiredUnits.size();
 				realUnitCount += unit->getType().supplyRequired();
+				if (unit->getType().getName() != "Protoss_Probe" && unit->getType().getName() != "Terran_SCV" && unit->getType().getName() != "Zerg_Drone" && unit->getType().supplyRequired() > 0){
+					KMeanXSum += unit->getPosition().x;
+					KMeanYSum += unit->getPosition().y;
+					UnitCount++;
+				}
+				if (unit->isAttacking()) isAttackingSum++;
+				if (unit->isUnderAttack() != 0) isUnderAttackSum++;
+				if (unit->getAirWeaponCooldown() != 0 || unit->getGroundWeaponCooldown() != 0) isCooldowningCount++;
+				if (unit->isStartingAttack()) isStartingAttackCount++;
 			}
 		}
+		if (p == InformationManager::Instance().p1){
+			CumulativeDestroyedUnitCount = p1CumulativeDestroyedUnitCount;
+			gatheredMineral = p->gatheredMinerals();
+			gatheredGas = p->gatheredGas();
+		}
+		else{
+			CumulativeDestroyedUnitCount = p2CumulativeDestroyedUnitCount;
+			gatheredMineral = p->gatheredMinerals();
+			gatheredGas = p->gatheredGas();
+		}
+		if (UnitCount != 0){
+			KMeanX = KMeanXSum / UnitCount;
+			KMeanY = KMeanYSum / UnitCount;
+		}
+		else{
+			KMeanX = 0;
+			KMeanY = 0;
+		}
+
 		replayDat << p->getID()
 			<< ", " << BWAPI::Broodwar->getFrameCount()
 			<< ", " << p->supplyUsed()
 			<< ", " << p->supplyTotal()
 			<< ", " << realUnitCount
+			<< ", " << KMeanX
+			<< ", " << KMeanY
+			<< ", " << isAttackingSum
+			<< ", " << isUnderAttackSum
+			<< ", " << isCooldowningCount
+			<< ", " << isStartingAttackCount
+			<< ", " << CumulativeDestroyedUnitCount
+			<< ", " << gatheredMineral
+			<< ", " << gatheredGas
 			<< '\n';
 	}
 }
@@ -477,11 +530,12 @@ void LoggingManager::saveUnitsLog()
 			BWAPI::TechType techType = unit->getTech();
 			BWAPI::UpgradeType upgradeType = unit->getUpgrade();
 			if (unit->isAttacking()) isAttackingSum++;
-			if (unit->isUnderAttack()) isUnderAttackSum++;
+			if (unit->isUnderAttack() != 0) isUnderAttackSum++;
 			if (unit != nullptr && unit->isCompleted())
 			{
 				replayDat << p->getID()
 					<< ", " << BWAPI::Broodwar->getFrameCount()
+					//<< ", " << unit->getType().supplyRequired()
 					<< ", " << unit->getType().getName()
 					<< ", " << unit->getID()
 					<< ", " << unit->getHitPoints()

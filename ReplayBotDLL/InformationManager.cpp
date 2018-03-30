@@ -169,7 +169,7 @@ void InformationManager::onUnitDestroy(BWAPI::Unit unit)
 {
 	if (unit->getType().isNeutral())
 		return;
-
+	
 	_unitData[unit->getPlayer()].removeUnitNBuilding(unit);
 	
 	if(unit->isCompleted())

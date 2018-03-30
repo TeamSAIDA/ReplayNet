@@ -9,7 +9,7 @@ namespace MyBot
 {
 	/// 실제 봇프로그램의 본체가 되는 class<br>
 	/// 스타크래프트 경기 도중 발생하는 이벤트들이 적절하게 처리되도록 해당 Manager 객체에게 이벤트를 전달하는 관리자 Controller 역할을 합니다
-	class GameCommander 
+	class GameCommander
 	{
 		/// 디버깅용 플래그 : 어느 Manager 가 에러를 일으키는지 알기위한 플래그
 		bool isToFindError;
@@ -18,7 +18,7 @@ namespace MyBot
 
 		GameCommander();
 		~GameCommander();
-		
+
 		/// 경기가 시작될 때 일회적으로 발생하는 이벤트를 처리합니다
 		void onStart();
 		/// 경기가 종료될 때 일회적으로 발생하는 이벤트를 처리합니다
@@ -73,8 +73,6 @@ namespace MyBot
 		void onSendText(std::string text);
 		/// 다른 플레이어로부터 텍스트를 전달받았을 때 발생하는 이벤트를 처리합니다
 		void onReceiveText(BWAPI::Player player, std::string text);
-		///게임이 시작되었을때 생성된 미네랄, 가스, 중립건물의 위치정보를 기억합니다.
-		void onMineralCheck(BWAPI::Unit unit);
 	};
 
 }

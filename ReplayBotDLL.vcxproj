@@ -42,11 +42,11 @@
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup>
     <_ProjectFileVersion>10.0.30319.1</_ProjectFileVersion>
-    <OutDir Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(SolutionDir)\..\bin\</OutDir>
+    <OutDir Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(SolutionDir)\$(Configuration)\$(ProjectName)\</OutDir>
     <IntDir Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(SolutionDir)\$(Configuration)\$(ProjectName)\</IntDir>
     <LinkIncremental Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</LinkIncremental>
     <OutDir Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">C:\StarCraft\bwapi-data\</OutDir>
-    <IntDir Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(Configuration)\$(ProjectName)\</IntDir>
+    <IntDir Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(SolutionDir)\$(Configuration)\$(ProjectName)\</IntDir>
     <IgnoreImportLibrary Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">false</IgnoreImportLibrary>
     <LinkIncremental Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">false</LinkIncremental>
     <CodeAnalysisRuleSet Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">AllRules.ruleset</CodeAnalysisRuleSet>
@@ -62,7 +62,7 @@
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
       <Optimization>Disabled</Optimization>
-      <AdditionalIncludeDirectories>../BOSS/source;../SparCraft/source;../source;$(BWTA_DIR)/include;$(BWAPI_DIR)/include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>C:/StarCraft/bwlibrary/BWAPI412/include;C:/StarCraft/bwlibrary/BWTA22/include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>WIN32;_DEBUG;_WINDOWS;_USRDLL;EXAMPLEAIMODULE_EXPORTS;NOMINMAX;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <MinimalRebuild>false</MinimalRebuild>
       <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
@@ -75,7 +75,7 @@
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
     </ClCompile>
     <Link>
-      <AdditionalDependencies>$(BWAPI_DIR)/lib/BWAPId.lib;$(Configuration)/SparCraft/SparCraft_d.lib;../../BOSS/bin/BOSS_d.lib;$(BWTA_DIR)/lib/BWTAd.lib;$(BWTA_DIR)/lib/libboost_system-vc120-mt-gd-1_56.lib;$(BWTA_DIR)/lib/libboost_thread-vc120-mt-gd-1_56.lib;$(BWTA_DIR)/lib/libCGAL-vc120-mt-gd-4.4.lib;$(BWTA_DIR)/lib/libgmp-10.lib;$(BWTA_DIR)/lib/libmpfr-4.lib;$(BWTA_DIR)/lib/libboost_filesystem-vc120-mt-gd-1_56.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>Advapi32.lib;$(BWAPI_DIR)/lib/BWAPId.lib;$(BWAPI_DIR)/lib/BWAPIClientd.lib;%(AdditionalDependencies);C:/StarCraft/bwlibrary/BWTA22/lib/BWTAd.lib;C:/StarCraft/bwlibrary/BWTA22/lib/libCGAL-vc120-mt-gd-4.4.lib;C:/StarCraft/bwlibrary/BWTA22/lib/libboost_thread-vc120-mt-gd-1_56.lib;C:/StarCraft/bwlibrary/BWTA22/lib/libboost_system-vc120-mt-gd-1_56.lib;C:/StarCraft/bwlibrary/BWTA22/lib/libboost_filesystem-vc120-mt-gd-1_56.lib;C:/StarCraft/bwlibrary/BWTA22/lib/libgmp-10.lib;C:/StarCraft/bwlibrary/BWTA22/lib/libmpfr-4.lib</AdditionalDependencies>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <SubSystem>Windows</SubSystem>
       <TargetMachine>MachineX86</TargetMachine>
